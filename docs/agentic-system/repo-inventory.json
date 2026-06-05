@@ -84,7 +84,6 @@
   "config": [
     "alembic.ini",
     "pyproject.toml",
-    "docker-compose.yml",
     "frontend/package-lock.json",
     "frontend/package.json",
     "frontend/tsconfig.json",

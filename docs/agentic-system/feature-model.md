@@ -21,6 +21,6 @@ The main product shape is warmer-first context-sensitivity analysis with immutab
 - Provider credentials stay in local environment variables. Encrypted in-app key storage is deferred.
 - Artifact storage is local filesystem first. Cloud/S3 storage remains a later architecture option.
 - Synthetic demo signals prove workflow coverage; they are not real provider quality evidence.
-- Browser and Docker Compose service smoke checks are separate environment-level validations and are not replaced by unit tests.
+- Browser and host-service smoke checks are separate environment-level validations and are not replaced by unit tests.
 
 The detailed JSON feature model is in `docs/agentic-system/feature-model.json`. The review slice map is in `docs/agentic-system/review/slice-plan.md`.

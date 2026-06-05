@@ -251,7 +251,7 @@
       "id": "FEATURE-DEV-FOUNDATION",
       "name": "Development foundation and CI",
       "category": "internal-platform",
-      "summary": "Local bootstrap, packaging, service startup, lint/test/build commands, Docker Compose services, and CI workflow.",
+      "summary": "Local bootstrap, packaging, service startup, lint/test/build commands, host services, and CI workflow.",
       "intended_behavior": "A developer can install Python and frontend dependencies, start API/frontend/worker services, run manifest preview, and rely on CI for compile, lint, Python tests, frontend install, and frontend build.",
       "user_or_system_value": "Keeps repository setup repeatable and gives reviewers executable evidence for future changes.",
       "entry_points": [
@@ -263,13 +263,11 @@
         "make worker",
         "make frontend",
         "make preview-example",
-        "docker compose up -d postgres redis",
         ".github/workflows/ci.yml"
       ],
       "code_paths": [
         "Makefile",
         "pyproject.toml",
-        "docker-compose.yml",
         ".env.example",
         ".github/workflows/ci.yml",
         "frontend/package.json",
@@ -292,7 +290,7 @@
       ],
       "related_features": [],
       "known_risks": [
-        "CI does not exercise Docker Compose services or an interactive browser smoke path.",
+        "CI does not exercise host Postgres/Redis services or an interactive browser smoke path.",
         "Branch protection requirements may include checks outside the checked-in workflow."
       ],
       "doc_code_mismatches": [],
@@ -1446,7 +1444,7 @@
     }
   ],
   "unknowns": [
-    "Live OpenAI, Anthropic, Promptfoo CLI, Redis worker, Docker Compose services, browser smoke, and external OpenTelemetry collector behavior require separate environment-level validation.",
+    "Live OpenAI, Anthropic, Promptfoo CLI, Redis worker, host Postgres/Redis services, browser smoke, and external OpenTelemetry collector behavior require separate environment-level validation.",
     "V3 backlog items remain intentionally out of scope: production trace ingestion, active sampling, synthetic case generation, team administration, evaluator CI gates, prompt deployment, model release comparison, custom providers, local model hosting, and scheduled drift monitoring."
   ],
   "evidence": [

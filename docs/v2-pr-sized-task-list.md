@@ -40,7 +40,7 @@ is documented in the PR body.
 - `npm test` from `frontend/`
 - Alembic upgrade check when migrations are added.
 - Browser smoke test after material UI changes.
-- Docker Compose smoke check when Postgres, Redis, API, worker, or setup docs change.
+- Host-service smoke check when Postgres, Redis, API, worker, or setup docs change.
 
 ## Dependency Map
 
