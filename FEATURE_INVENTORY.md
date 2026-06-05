@@ -9,7 +9,7 @@ V2 implementation slices are tracked in F36-F48. V3 backlog notes in `docs/imple
 
 ## F01 - Repository Foundation And Developer Workflow
 
-Description: Local development, dependency, CI, and service bootstrap conventions for the backend, CLI, frontend, Postgres, and Redis.
+Description: Local development, dependency, verification, and service bootstrap conventions for the backend, CLI, frontend, Postgres, and Redis.
 
 Files involved:
 
@@ -18,7 +18,6 @@ Files involved:
 - `.gitignore`
 - `Makefile`
 - `pyproject.toml`
-- `.github/workflows/ci.yml`
 - `backend/model_eval_api/__init__.py`
 - `backend/model_eval_api/persistence/__init__.py`
 - `cli/model_eval_cli/__init__.py`
@@ -27,7 +26,7 @@ Files involved:
 - `frontend/tsconfig.json`
 - `frontend/vite.config.ts`
 
-Architecture chosen: Python packaging exposes `evalbench` from the backend/CLI source roots, Makefile targets wrap common checks and local servers, SQLite is the local default with host-installed Postgres and Redis available for service checks, and GitHub Actions runs separate Python and frontend jobs.
+Architecture chosen: Python packaging exposes `evalbench` from the backend/CLI source roots, Makefile targets wrap common checks and local servers, and SQLite is the local default with host-installed Postgres and Redis available for service checks.
 
 ## F02 - Product Scope, Architecture, And Handoff Docs
 

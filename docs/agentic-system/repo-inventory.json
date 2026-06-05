@@ -68,9 +68,7 @@
     "backend/model_eval_api/persistence/__pycache__/database.cpython-311.pyc",
     "backend/model_eval_api/persistence/__pycache__/__init__.cpython-311.pyc"
   ],
-  "ci_files": [
-    ".github/workflows/ci.yml"
-  ],
+  "ci_files": [],
   "clis": [
     "tests/test_cli_seed.py",
     "tests/__pycache__/test_cli_seed.cpython-311-pytest-9.0.3.pyc",
@@ -111,8 +109,7 @@
     "docs/agentic-system/repo-inventory.json",
     "docs/agentic-system/feature-model.json",
     "examples/v2_copper_benchmark_suite.yaml",
-    "examples/copper_memo_context_sensitivity.yaml",
-    ".github/workflows/ci.yml"
+    "examples/copper_memo_context_sensitivity.yaml"
   ],
   "docs": [
     "README.md",

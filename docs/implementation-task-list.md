@@ -22,7 +22,7 @@ Tasks:
 - [x] Add a `Makefile` or `justfile` for common commands: install, lint, test, build, api, worker, frontend, and preview-example.
 - [x] Add README setup notes for SQLite defaults plus host-installed Postgres and Redis.
 - [x] Add a short architecture decision record explaining why warmers are first-class entities rather than prompt text.
-- [x] Add CI with Python compile/lint/tests and frontend build.
+- [x] Add local verification with Python compile/lint/tests and frontend build.
 - [x] Add seed data command for the copper memo demo objects.
 
 ## Phase 1: Manifest Contract And Run Generation

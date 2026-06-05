@@ -6,7 +6,7 @@ The main product shape is warmer-first context-sensitivity analysis with immutab
 
 ## Implemented Areas
 
-- Development foundation, local services, CI, Python packaging, frontend build/test setup, and reproducible dependency locking.
+- Development foundation, local services, local verification, Python packaging, frontend build/test setup, and reproducible dependency locking.
 - Warmer-first product model, manifest expansion, run generation, and immutable experiment snapshots.
 - Project-scoped libraries for cases, artifacts, system prompts, warmers, model configs, evaluators, judges, metric adapters, benchmark suites, reviewers, and taxonomies.
 - Provider adapters for OpenAI and Anthropic with local-only, provider policy, context-budget, cost-cap, cache, retry, cancellation, and audit controls.

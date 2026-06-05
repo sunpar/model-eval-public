@@ -1,6 +1,6 @@
 # Slice Plan
 
-- SLICE-001: Review Development foundation and CI
+- SLICE-001: Review Development foundation and verification
 - SLICE-002: Review Warmer-first product and data model
 - SLICE-003: Review Manifest contract and run generation
 - SLICE-004: Review Persistence, migrations, and immutable snapshots

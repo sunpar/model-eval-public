@@ -4,9 +4,9 @@
       "acceptance_criteria": [
         "Review completed and any changes verified."
       ],
-      "branch": "codebase-review/SLICE-001-review-development-foundation-and-ci",
+      "branch": "codebase-review/SLICE-001-review-development-foundation-and-verification",
       "dependencies": [],
-      "description": "Review and identify safe refactor opportunities for Development foundation and CI.",
+      "description": "Review and identify safe refactor opportunities for Development foundation and verification.",
       "docs_to_read": [
         "README.md",
         "FEATURE_INVENTORY.md"
@@ -19,8 +19,7 @@
         "make api",
         "make worker",
         "make frontend",
-        "make preview-example",
-        ".github/workflows/ci.yml"
+        "make preview-example"
       ],
       "expected_pr_size": {
         "max_files_changed": 8,
@@ -30,8 +29,7 @@
       "files_allowed_to_edit": [
         "Makefile",
         "pyproject.toml",
-        ".env.example",
-        ".github/workflows/ci.yml"
+        ".env.example"
       ],
       "files_not_allowed_to_edit": [
         "package-lock.json",
@@ -42,13 +40,12 @@
         "Makefile",
         "pyproject.toml",
         ".env.example",
-        ".github/workflows/ci.yml",
         "frontend/package.json",
         "frontend/vite.config.ts",
         "frontend/tsconfig.json"
       ],
       "id": "SLICE-001",
-      "intended_behavior": "A developer can install Python and frontend dependencies, start API/frontend/worker services, run manifest preview, and rely on CI for compile, lint, Python tests, frontend install, and frontend build.",
+      "intended_behavior": "A developer can install Python and frontend dependencies, start API/frontend/worker services, run manifest preview, and run local compile, lint, Python test, frontend install, and frontend build checks.",
       "invariants": [
         "Preserve documented behavior."
       ],
@@ -56,7 +53,7 @@
         "New product behavior."
       ],
       "parallel_conflicts": [],
-      "pr_title": "[codebase-review] SLICE-001: Review Development foundation and CI",
+      "pr_title": "[codebase-review] SLICE-001: Review Development foundation and verification",
       "refactor_targets": [
         "Remove local duplication if safe."
       ],
@@ -70,17 +67,16 @@
       ],
       "risk": "medium",
       "risk_notes": [
-        "CI does not exercise host Postgres/Redis services or an interactive browser smoke path.",
-        "Branch protection requirements may include checks outside the checked-in workflow."
+        "Local checks do not exercise host Postgres/Redis services or an interactive browser smoke path.",
+        "Branch protection requirements may include remote checks outside the local release gate."
       ],
       "slice_type": "review-only",
       "tests_to_read": [
-        ".github/workflows/ci.yml",
         "tests/test_manifest_contract.py",
         "frontend/src/App.test.tsx",
         "frontend/src/experimentBuilder.test.ts"
       ],
-      "title": "Review Development foundation and CI",
+      "title": "Review Development foundation and verification",
       "verification_commands": [
         "make lint",
         "make test",
