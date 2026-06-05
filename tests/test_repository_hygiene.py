@@ -22,9 +22,12 @@ K8S_TOKEN = "k" + "8s"
 OCI_TOKEN = "OC" + "I"
 FORBIDDEN_FILE_PATTERNS = [
     re.compile(rf"(^|/){RUNTIME_FILE_TOKEN}(?:\..*)?$", re.IGNORECASE),
-    re.compile(rf"(^|/){COMPOSE_FILE_TOKEN}\.(?:ya?ml)$", re.IGNORECASE),
-    re.compile(r"(^|/)compose\.(?:ya?ml)$", re.IGNORECASE),
-    re.compile(rf"(^|/){ALT_RUNTIME_TOKEN}-compose\.(?:ya?ml)$", re.IGNORECASE),
+    re.compile(rf"(^|/){COMPOSE_FILE_TOKEN}(?:\.[^/]+)*\.(?:ya?ml)$", re.IGNORECASE),
+    re.compile(r"(^|/)compose(?:\.[^/]+)*\.(?:ya?ml)$", re.IGNORECASE),
+    re.compile(
+        rf"(^|/){ALT_RUNTIME_TOKEN}-compose(?:\.[^/]+)*\.(?:ya?ml)$",
+        re.IGNORECASE,
+    ),
     re.compile(rf"(^|/){CONTAINER_FILE_TOKEN}(?:\..*)?$", re.IGNORECASE),
     re.compile(rf"(^|/)\.{RUNTIME_TOKEN}ignore$", re.IGNORECASE),
     re.compile(rf"(^|/)\.{CONTAINER_TOKEN}ignore$", re.IGNORECASE),
@@ -120,14 +123,28 @@ def test_forbidden_file_patterns_cover_common_container_runtime_files() -> None:
         Path(RUNTIME_FILE_TOKEN),
         Path(RUNTIME_FILE_TOKEN + ".local"),
         Path(COMPOSE_FILE_TOKEN + ".yml"),
+        Path(COMPOSE_FILE_TOKEN + ".override.yml"),
         Path("compose.yaml"),
+        Path("compose.override.yaml"),
         Path(ALT_RUNTIME_TOKEN + "-compose.yml"),
+        Path(ALT_RUNTIME_TOKEN + "-compose.override.yml"),
         Path(CONTAINER_FILE_TOKEN),
         Path("." + RUNTIME_TOKEN + "ignore"),
         Path("." + CONTAINER_TOKEN + "ignore"),
     ]
 
     assert all(_is_forbidden_path(path) for path in examples)
+
+
+def test_default_sqlite_database_file_is_gitignored() -> None:
+    result = subprocess.run(
+        ["git", "check-ignore", "model_eval.sqlite3"],
+        cwd=REPO_ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    assert result.returncode == 0
 
 
 def test_forbidden_text_patterns_cover_common_container_runtime_references() -> None:

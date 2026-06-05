@@ -72,6 +72,7 @@
       ],
       "slice_type": "review-only",
       "tests_to_read": [
+        "tests/test_repository_hygiene.py",
         "tests/test_manifest_contract.py",
         "frontend/src/App.test.tsx",
         "frontend/src/experimentBuilder.test.ts"

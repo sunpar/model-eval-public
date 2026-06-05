@@ -18,6 +18,7 @@ Files involved:
 - `.gitignore`
 - `Makefile`
 - `pyproject.toml`
+- `tests/test_repository_hygiene.py`
 - `backend/model_eval_api/__init__.py`
 - `backend/model_eval_api/persistence/__init__.py`
 - `cli/model_eval_cli/__init__.py`

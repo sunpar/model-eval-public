@@ -264,6 +264,7 @@
       "code_paths": [
         "Makefile",
         "pyproject.toml",
+        ".gitignore",
         ".env.example",
         "frontend/package.json",
         "frontend/vite.config.ts",
@@ -274,6 +275,7 @@
         "FEATURE_INVENTORY.md"
       ],
       "tests": [
+        "tests/test_repository_hygiene.py",
         "tests/test_manifest_contract.py",
         "frontend/src/App.test.tsx",
         "frontend/src/experimentBuilder.test.ts"
@@ -295,7 +297,9 @@
         "README.md",
         "Makefile",
         "pyproject.toml",
+        ".gitignore",
         "frontend/package.json",
+        "tests/test_repository_hygiene.py",
         "FEATURE_INVENTORY.md"
       ],
       "confidence": "high"

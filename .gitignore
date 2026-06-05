@@ -18,6 +18,7 @@ node_modules/
 frontend/dist/
 coverage/
 *.sqlite
+*.sqlite3
 *.db
 *.log
 handoff/*.zip
