@@ -1,0 +1,1787 @@
+{
+  "slices": [
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-001-review-development-foundation-and-ci",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Development foundation and CI.",
+      "docs_to_read": [
+        "README.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "make install",
+        "make lint",
+        "make test",
+        "make build",
+        "make api",
+        "make worker",
+        "make frontend",
+        "make preview-example",
+        "docker compose up -d postgres redis",
+        ".github/workflows/ci.yml"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-DEV-FOUNDATION",
+      "files_allowed_to_edit": [
+        "Makefile",
+        "pyproject.toml",
+        "docker-compose.yml",
+        ".env.example",
+        ".github/workflows/ci.yml"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "Makefile",
+        "pyproject.toml",
+        "docker-compose.yml",
+        ".env.example",
+        ".github/workflows/ci.yml",
+        "frontend/package.json",
+        "frontend/vite.config.ts",
+        "frontend/tsconfig.json"
+      ],
+      "id": "SLICE-001",
+      "intended_behavior": "A developer can install Python and frontend dependencies, start API/frontend/worker services, run manifest preview, and rely on CI for compile, lint, Python tests, frontend install, and frontend build.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-001: Review Development foundation and CI",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "CI does not exercise Docker Compose services or an interactive browser smoke path.",
+        "Branch protection requirements may include checks outside the checked-in workflow."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        ".github/workflows/ci.yml",
+        "tests/test_manifest_contract.py",
+        "frontend/src/App.test.tsx",
+        "frontend/src/experimentBuilder.test.ts"
+      ],
+      "title": "Review Development foundation and CI",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-002-review-warmer-first-product-and-data-model",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Warmer-first product and data model.",
+      "docs_to_read": [
+        "docs/product-brief.md",
+        "docs/adr/0001-warmers-as-first-class-entities.md",
+        "docs/data-model.md",
+        "docs/architecture.md",
+        "README.md"
+      ],
+      "entry_points": [
+        "Library: warmers",
+        "Experiment Builder warmer selection",
+        "examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-WARMER-FIRST-PRODUCT-MODEL",
+      "files_allowed_to_edit": [
+        "backend/model_eval_api/manifest.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "frontend/src/experimentBuilder.ts"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "backend/model_eval_api/manifest.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "frontend/src/experimentBuilder.ts",
+        "frontend/src/App.tsx"
+      ],
+      "id": "SLICE-002",
+      "intended_behavior": "Users compare the same final task across controlled variations in model, system prompt, artifact inputs, evaluators, and structured prior conversation context.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-002: Review Warmer-first product and data model",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "Context-sensitivity metrics can be over-interpreted if users ignore warnings about heuristic or uncalibrated signals.",
+        "Broad V2/V3 backlog pressure could dilute the warmer-first wedge."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_manifest_contract.py",
+        "tests/test_persistence_phase2.py",
+        "tests/test_cli_seed.py",
+        "frontend/src/experimentBuilder.test.ts",
+        "frontend/src/App.test.tsx"
+      ],
+      "title": "Review Warmer-first product and data model",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-003-review-manifest-contract-and-run-generation",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Manifest contract and run generation.",
+      "docs_to_read": [
+        "README.md",
+        "docs/architecture.md",
+        "docs/headless-workflow.md",
+        "docs/v2-implementation-task-list.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "evalbench validate <manifest>",
+        "evalbench preview <manifest>",
+        "evalbench expand <manifest>",
+        "POST /manifests/validate",
+        "POST /manifests/preview",
+        "POST /projects/{project_slug}/experiments/preview"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-MANIFEST-RUN-GENERATION",
+      "files_allowed_to_edit": [
+        "backend/model_eval_api/manifest.py",
+        "backend/model_eval_api/run_generation.py",
+        "backend/model_eval_api/main.py",
+        "cli/model_eval_cli/main.py",
+        "examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "backend/model_eval_api/manifest.py",
+        "backend/model_eval_api/run_generation.py",
+        "backend/model_eval_api/main.py",
+        "cli/model_eval_cli/main.py",
+        "examples/copper_memo_context_sensitivity.yaml",
+        "examples/v2_copper_benchmark_suite.yaml"
+      ],
+      "id": "SLICE-003",
+      "intended_behavior": "The same parser and expander validate manifests, report actionable errors, generate deterministic logical runs and attempts, and preserve normalized plus raw provider fields.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-003: Review Manifest contract and run generation",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "Manifest expansion is central to many surfaces; schema drift can break API, CLI, frontend builder, Promptfoo import/export, and suite reruns together.",
+        "Unsupported design types must continue to fail clearly rather than silently producing incomplete experiment matrices."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_manifest_contract.py",
+        "tests/test_library_builder_phase6.py",
+        "tests/test_benchmark_suites_phase17.py",
+        "tests/test_promptfoo_interop_phase22.py",
+        "frontend/src/experimentBuilder.test.ts"
+      ],
+      "title": "Review Manifest contract and run generation",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-004-review-persistence-migrations-and-immutable-snapshots",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Persistence, migrations, and immutable snapshots.",
+      "docs_to_read": [
+        "docs/data-model.md",
+        "docs/privacy-repro-safety.md",
+        "docs/architecture.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "create_experiment_from_manifest",
+        "update_draft_experiment_from_manifest",
+        "record_run_attempt",
+        "record_score",
+        "alembic upgrade head"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-PERSISTENCE-SNAPSHOTS",
+      "files_allowed_to_edit": [
+        "backend/model_eval_api/persistence/database.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "alembic/versions"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "backend/model_eval_api/persistence/database.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "alembic/versions"
+      ],
+      "id": "SLICE-004",
+      "intended_behavior": "Historical experiments remain reproducible when library records change, retries/reruns do not overwrite logical runs, and persisted payloads redact sensitive provider or artifact metadata where required.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-004: Review Persistence, migrations, and immutable snapshots",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "Repository helpers are a large shared surface; small schema or snapshot changes can affect API, CLI, frontend, analytics, exports, and demos.",
+        "SQLite-oriented test paths may not catch every Postgres-specific migration or constraint behavior."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_persistence_phase2.py",
+        "tests/test_privacy_repro_phase13.py",
+        "tests/test_executor_phase5.py",
+        "tests/test_review_phase8.py",
+        "tests/test_review_queues_phase16.py",
+        "tests/test_llm_judges_phase14.py",
+        "tests/test_metric_adapters_phase21.py",
+        "tests/test_benchmark_suites_phase17.py"
+      ],
+      "title": "Review Persistence, migrations, and immutable snapshots",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-005-review-project-library-and-experiment-api",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Project library and experiment API.",
+      "docs_to_read": [
+        "docs/architecture.md",
+        "docs/headless-workflow.md",
+        "docs/privacy-repro-safety.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "GET /health",
+        "GET/POST /projects/{project_slug}/library/*",
+        "POST /projects/{project_slug}/experiments/preview",
+        "POST /projects/{project_slug}/experiments/drafts",
+        "PUT /projects/{project_slug}/experiments/{experiment_id}/draft",
+        "POST /projects/{project_slug}/experiments/{experiment_id}/queue",
+        "GET /monitor/experiments",
+        "GET /monitor/experiments/{experiment_id}/runs",
+        "GET /monitor/experiments/{experiment_id}/analytics",
+        "GET /monitor/experiments/{experiment_id}/exports"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-API-LIBRARY-EXPERIMENTS",
+      "files_allowed_to_edit": [
+        "backend/model_eval_api/main.py",
+        "backend/model_eval_api/schemas.py",
+        "backend/model_eval_api/response_payloads.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/queue.py"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "backend/model_eval_api/main.py",
+        "backend/model_eval_api/schemas.py",
+        "backend/model_eval_api/response_payloads.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/queue.py"
+      ],
+      "id": "SLICE-005",
+      "intended_behavior": "The frontend and external clients can manage Model Eval workflows through typed JSON boundaries while backend services enforce project scope and shared validation.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-005: Review Project library and experiment API",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "API response DTOs are manually mirrored by TypeScript types, so drift can create frontend runtime failures.",
+        "Many endpoints live in a single main.py module, increasing merge conflict and review risk for future API changes."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_manifest_contract.py",
+        "tests/test_library_builder_phase6.py",
+        "tests/test_executor_phase5.py",
+        "tests/test_results_analytics_phase10.py",
+        "tests/test_review_phase8.py",
+        "tests/test_review_queues_phase16.py",
+        "tests/test_llm_judges_phase14.py",
+        "tests/test_llm_judge_execution_phase15.py",
+        "tests/test_metric_adapters_phase21.py",
+        "tests/test_promptfoo_interop_phase22.py"
+      ],
+      "title": "Review Project library and experiment API",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-006-review-provider-adapters-executor-lifecycle-and-queueing",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Provider adapters, executor lifecycle, and queueing.",
+      "docs_to_read": [
+        "docs/architecture.md",
+        "docs/privacy-repro-safety.md",
+        "docs/headless-workflow.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "execute_experiment",
+        "execute_run",
+        "make worker",
+        "POST /monitor/runs/{run_id}/retry",
+        "POST /monitor/experiments/{experiment_id}/cancel",
+        "evalbench run <manifest> --dry-run --local-only"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-PROVIDER-EXECUTOR-QUEUE",
+      "files_allowed_to_edit": [
+        "backend/model_eval_api/executor.py",
+        "backend/model_eval_api/execution_states.py",
+        "backend/model_eval_api/queue.py",
+        "backend/model_eval_api/providers/base.py",
+        "backend/model_eval_api/providers/openai.py"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "backend/model_eval_api/executor.py",
+        "backend/model_eval_api/execution_states.py",
+        "backend/model_eval_api/queue.py",
+        "backend/model_eval_api/providers/base.py",
+        "backend/model_eval_api/providers/openai.py",
+        "backend/model_eval_api/providers/anthropic.py",
+        "backend/model_eval_api/providers/settings.py",
+        "backend/model_eval_api/providers/pricing.py",
+        "backend/model_eval_api/providers/errors.py"
+      ],
+      "id": "SLICE-006",
+      "intended_behavior": "Runs advance through safe local-first execution; outbound calls require explicit policy clearance, and attempts preserve provider payloads, errors, timing, tokens, cost, retry, replicate, and cache metadata.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-006: Review Provider adapters, executor lifecycle, and queueing",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "Provider APIs and pricing metadata can drift outside the repo; adapters need periodic live-contract review before production use.",
+        "Queue wrappers are intentionally thin and testable without Redis, but real worker/runtime behavior still needs environment-level smoke coverage."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_provider_adapters_phase4.py",
+        "tests/test_executor_phase5.py",
+        "tests/test_privacy_repro_phase13.py",
+        "tests/test_exports_phase11.py",
+        "tests/test_llm_judge_execution_phase15.py"
+      ],
+      "title": "Review Provider adapters, executor lifecycle, and queueing",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-007-review-artifact-storage-and-preprocessing",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Artifact storage and preprocessing.",
+      "docs_to_read": [
+        "docs/data-model.md",
+        "docs/architecture.md",
+        "docs/v2-implementation-task-list.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "POST /projects/{project_slug}/library/artifacts",
+        "PATCH /projects/{project_slug}/library/artifacts/{artifact_ref}/input-mode",
+        "POST /projects/{project_slug}/library/artifacts/{artifact_ref}/preprocessing-runs",
+        "GET /projects/{project_slug}/library/artifacts/{artifact_ref}/derived-artifacts",
+        "Artifact editor preprocessing controls"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-ARTIFACT-PREPROCESSING",
+      "files_allowed_to_edit": [
+        "backend/model_eval_api/artifact_types.py",
+        "backend/model_eval_api/artifacts.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "backend/model_eval_api/artifact_types.py",
+        "backend/model_eval_api/artifacts.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "backend/model_eval_api/main.py",
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts"
+      ],
+      "id": "SLICE-007",
+      "intended_behavior": "Runs record exactly what model inputs used, derived outputs remain metadata-first and local, unsafe paths or raw private payloads are excluded from API previews and export metadata, and missing derived inputs fail before provider execution.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-007: Review Artifact storage and preprocessing",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "PDF/image/OCR behavior depends on local PyMuPDF, Pillow, and optional OCR tooling.",
+        "Artifact paths and local storage URIs require strict redaction discipline across API, UI, exports, traces, and audit logs."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_artifacts_phase3.py",
+        "tests/test_privacy_repro_phase13.py",
+        "tests/test_v2_demo_phase25.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "title": "Review Artifact storage and preprocessing",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-008-review-benchmark-suites-dataset-splits-and-replicates",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Benchmark suites, dataset splits, and replicates.",
+      "docs_to_read": [
+        "docs/v2-implementation-task-list.md",
+        "docs/results-analytics.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "GET/POST /projects/{project_slug}/library/benchmark-suites",
+        "GET /projects/{project_slug}/library/benchmark-suites/{suite_id}/preview",
+        "evalbench suite run <suite> --split <split> --dry-run --local-only",
+        "Benchmark suites library editor",
+        "Experiment Builder suite selection"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-BENCHMARK-REPLICATES",
+      "files_allowed_to_edit": [
+        "backend/model_eval_api/manifest.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "backend/model_eval_api/headless.py"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "backend/model_eval_api/manifest.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "backend/model_eval_api/headless.py",
+        "backend/model_eval_api/main.py",
+        "cli/model_eval_cli/main.py",
+        "frontend/src/App.tsx",
+        "frontend/src/experimentBuilder.ts"
+      ],
+      "id": "SLICE-008",
+      "intended_behavior": "Users can rerun locked suites over selected splits, preserve suite membership snapshots, and measure nondeterminism from replicate attempts without counting retry recovery as reliability evidence.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-008: Review Benchmark suites, dataset splits, and replicates",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "Suite reruns reuse manifest and execution machinery; regressions in one path can affect both suite and non-suite experiments.",
+        "Small replicate counts can produce visible but low-confidence intervals."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_benchmark_suites_phase17.py",
+        "tests/test_manifest_contract.py",
+        "tests/test_executor_phase5.py",
+        "tests/test_results_analytics_phase10.py",
+        "tests/test_exports_phase11.py",
+        "frontend/src/experimentBuilder.test.ts",
+        "frontend/src/App.test.tsx"
+      ],
+      "title": "Review Benchmark suites, dataset splits, and replicates",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-009-review-blind-review-reviewer-queues-and-failure-taxonomies",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Blind review, reviewer queues, and failure taxonomies.",
+      "docs_to_read": [
+        "docs/architecture.md",
+        "docs/v2-implementation-task-list.md",
+        "docs/copper-memo-demo.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "POST /projects/{project_slug}/experiments/{experiment_id}/review-sets",
+        "GET /review-sets/{review_set_id}",
+        "POST /review-sets/{review_set_id}/assignments",
+        "GET /review-sets/{review_set_id}/reviewers/{reviewer_slug}/queue",
+        "POST /review-assignments/{assignment_id}/decision",
+        "POST /review-items/{review_item_id}/decision",
+        "Comparison Workspace"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-REVIEW-QUEUES-TAXONOMY",
+      "files_allowed_to_edit": [
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/main.py",
+        "backend/model_eval_api/schemas.py",
+        "backend/model_eval_api/results_analytics.py"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/main.py",
+        "backend/model_eval_api/schemas.py",
+        "backend/model_eval_api/results_analytics.py",
+        "backend/model_eval_api/headless.py",
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts"
+      ],
+      "id": "SLICE-009",
+      "intended_behavior": "Human reviewers can score output pairs without hidden metadata leakage, submit typed decisions, revise decisions, work through assigned queues, and use versioned failure taxonomy labels.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-009: Review Blind review, reviewer queues, and failure taxonomies",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "Metadata reveal and export paths must preserve blind review guarantees until explicit reveal.",
+        "Reviewer and taxonomy metadata are embedded in scores and exports, so schema changes need backward-compatible migration planning."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_review_phase8.py",
+        "tests/test_review_queues_phase16.py",
+        "tests/test_results_analytics_phase10.py",
+        "tests/test_exports_phase11.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "title": "Review Blind review, reviewer queues, and failure taxonomies",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-010-review-deterministic-evaluators-llm-judges-and-metric-adapters",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Deterministic evaluators, LLM judges, and metric adapters.",
+      "docs_to_read": [
+        "docs/results-analytics.md",
+        "docs/headless-workflow.md",
+        "docs/v2-implementation-task-list.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "evalbench score <experiment> --evaluator <id>",
+        "evalbench judge <experiment> --judge <id> --dry-run --local-only",
+        "evalbench metric-adapters <experiment>",
+        "POST /monitor/experiments/{experiment_id}/judges/{evaluator_id}/run",
+        "POST /monitor/experiments/{experiment_id}/metric-adapters/run",
+        "LLM judge config editor",
+        "Metric adapter config editor",
+        "Results judge and metric controls"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-EVALUATORS-JUDGES-METRICS",
+      "files_allowed_to_edit": [
+        "backend/model_eval_api/deterministic_evaluators.py",
+        "backend/model_eval_api/llm_judges.py",
+        "backend/model_eval_api/metric_adapters.py",
+        "backend/model_eval_api/metric_adapter_execution.py",
+        "backend/model_eval_api/persistence/models.py"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "backend/model_eval_api/deterministic_evaluators.py",
+        "backend/model_eval_api/llm_judges.py",
+        "backend/model_eval_api/metric_adapters.py",
+        "backend/model_eval_api/metric_adapter_execution.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/results_analytics.py",
+        "cli/model_eval_cli/main.py",
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts"
+      ],
+      "id": "SLICE-010",
+      "intended_behavior": "Users can apply local deterministic checks, run calibrated judge workflows over stored attempts, and execute compatible local metric adapters while preserving typed scores and evaluator snapshots.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-010: Review Deterministic evaluators, LLM judges, and metric adapters",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "LLM judge outputs can look authoritative even when they are dry-run, uncalibrated, or weakly calibrated against human labels.",
+        "Local deterministic metrics and DeepEval-style fixture mapping may not represent live external SDK behavior."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_deterministic_evaluators_phase9.py",
+        "tests/test_llm_judges_phase14.py",
+        "tests/test_llm_judge_execution_phase15.py",
+        "tests/test_metric_adapters_phase21.py",
+        "tests/test_results_analytics_phase10.py",
+        "tests/test_exports_phase11.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "title": "Review Deterministic evaluators, LLM judges, and metric adapters",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-011-review-results-analytics-divergence-uncertainty-and-frontier",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Results analytics, divergence, uncertainty, and frontier.",
+      "docs_to_read": [
+        "docs/results-analytics.md",
+        "docs/product-brief.md",
+        "docs/mvp-roadmap.md",
+        "docs/v2-implementation-task-list.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "GET /monitor/experiments/{experiment_id}/analytics",
+        "Results screen",
+        "evalbench compare",
+        "evalbench export --format markdown|csv|json",
+        "analytics-backed export rows"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-RESULTS-ANALYTICS",
+      "files_allowed_to_edit": [
+        "backend/model_eval_api/results_analytics.py",
+        "backend/model_eval_api/deterministic_evaluators.py",
+        "backend/model_eval_api/headless.py",
+        "backend/model_eval_api/main.py",
+        "frontend/src/App.tsx"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "backend/model_eval_api/results_analytics.py",
+        "backend/model_eval_api/deterministic_evaluators.py",
+        "backend/model_eval_api/headless.py",
+        "backend/model_eval_api/main.py",
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts"
+      ],
+      "id": "SLICE-011",
+      "intended_behavior": "Results favor count-backed directional summaries, label low-confidence or heuristic metrics, filter consistently across API/UI/export paths, and avoid implying false precision.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-011: Review Results analytics, divergence, uncertainty, and frontier",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "Heuristic divergence and carryover rows can be mistaken for calibrated semantic judgments if warnings are hidden downstream.",
+        "Quality comparisons require comparable case/split groupings; analytics must keep filtering and grouping rules explicit."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_results_analytics_phase10.py",
+        "tests/test_deterministic_evaluators_phase9.py",
+        "tests/test_exports_phase11.py",
+        "tests/test_llm_judge_execution_phase15.py",
+        "tests/test_metric_adapters_phase21.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "title": "Review Results analytics, divergence, uncertainty, and frontier",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-012-review-frontend-workbench",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Frontend workbench.",
+      "docs_to_read": [
+        "docs/mvp-roadmap.md",
+        "docs/copper-memo-demo.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "frontend/src/main.tsx",
+        "make frontend",
+        "npm run dev",
+        "Library screen",
+        "Experiment Builder screen",
+        "Run Monitor screen",
+        "Comparison Workspace",
+        "Results screen"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-FRONTEND-WORKBENCH",
+      "files_allowed_to_edit": [
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts",
+        "frontend/src/experimentBuilder.ts",
+        "frontend/src/styles.css",
+        "frontend/src/main.tsx"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts",
+        "frontend/src/experimentBuilder.ts",
+        "frontend/src/styles.css",
+        "frontend/src/main.tsx",
+        "frontend/package.json",
+        "frontend/vite.config.ts"
+      ],
+      "id": "SLICE-012",
+      "intended_behavior": "Users can operate the core local workbench from the browser with typed API calls, client-side manifest building, monitor filters, blind review workflows, and analytics/export controls.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-012: Review Frontend workbench",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "The frontend is concentrated in a large App.tsx file, raising review and conflict risk for future UI changes.",
+        "Manual TypeScript DTO mirroring can drift from backend schema changes."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "frontend/src/App.test.tsx",
+        "frontend/src/experimentBuilder.test.ts"
+      ],
+      "title": "Review Frontend workbench",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-013-review-headless-cli-and-stable-exports",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Headless CLI and stable exports.",
+      "docs_to_read": [
+        "README.md",
+        "docs/headless-workflow.md",
+        "docs/copper-memo-demo.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "evalbench validate",
+        "evalbench preview",
+        "evalbench expand",
+        "evalbench run",
+        "evalbench compare",
+        "evalbench review",
+        "evalbench score",
+        "evalbench judge",
+        "evalbench metric-adapters",
+        "evalbench suite run",
+        "evalbench export",
+        "evalbench demo copper-memo",
+        "evalbench demo v2"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-HEADLESS-CLI-EXPORTS",
+      "files_allowed_to_edit": [
+        "cli/model_eval_cli/main.py",
+        "cli/model_eval_cli/seed_data.py",
+        "backend/model_eval_api/headless.py",
+        "backend/model_eval_api/copper_seed.py",
+        "backend/model_eval_api/copper_demo.py"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "cli/model_eval_cli/main.py",
+        "cli/model_eval_cli/seed_data.py",
+        "backend/model_eval_api/headless.py",
+        "backend/model_eval_api/copper_seed.py",
+        "backend/model_eval_api/copper_demo.py",
+        "backend/model_eval_api/v2_demo.py",
+        "pyproject.toml"
+      ],
+      "id": "SLICE-013",
+      "intended_behavior": "Users can run reproducible workflows without the UI, with stable export ordering, hidden metadata protection for blind review exports, and local-only defaults for execution commands.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-013: Review Headless CLI and stable exports",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "CLI commands depend on local database URL and PYTHONPATH/package install state; docs include fallback commands for checkout use.",
+        "Export formats are stable contracts and require compatibility care when score or analytics payloads change."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_manifest_contract.py",
+        "tests/test_exports_phase11.py",
+        "tests/test_cli_seed.py",
+        "tests/test_copper_demo_phase12.py",
+        "tests/test_v2_demo_phase25.py",
+        "tests/test_promptfoo_interop_phase22.py",
+        "tests/test_metric_adapters_phase21.py"
+      ],
+      "title": "Review Headless CLI and stable exports",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-014-review-promptfoo-and-opentelemetry-interoperability",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Promptfoo and OpenTelemetry interoperability.",
+      "docs_to_read": [
+        "docs/headless-workflow.md",
+        "docs/privacy-repro-safety.md",
+        "docs/v2-implementation-task-list.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "evalbench import promptfoo <file> --preview-only",
+        "evalbench import promptfoo <file> --persist --project <slug>",
+        "evalbench export <experiment> --format promptfoo",
+        "evalbench export <experiment> --format otel-json",
+        "POST /projects/{project_slug}/imports/promptfoo/preview",
+        "GET /monitor/experiments/{experiment_id}/exports?format=promptfoo",
+        "GET /monitor/experiments/{experiment_id}/exports?format=otel-json"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-INTEROP-PROMPTFOO-OTEL",
+      "files_allowed_to_edit": [
+        "backend/model_eval_api/promptfoo.py",
+        "backend/model_eval_api/otel_export.py",
+        "backend/model_eval_api/headless.py",
+        "backend/model_eval_api/main.py",
+        "cli/model_eval_cli/main.py"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "backend/model_eval_api/promptfoo.py",
+        "backend/model_eval_api/otel_export.py",
+        "backend/model_eval_api/headless.py",
+        "backend/model_eval_api/main.py",
+        "cli/model_eval_cli/main.py",
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts"
+      ],
+      "id": "SLICE-014",
+      "intended_behavior": "Interop paths preserve raw provider params where possible, warn on unsupported or lossy Promptfoo mappings, and export trace metadata without private prompts, artifacts, warmer text, payloads, outputs, credentials, paths, checksums, or OCR text.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-014: Review Promptfoo and OpenTelemetry interoperability",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "Promptfoo schemas and provider formats can change externally; mapping logic needs compatibility review before relying on current behavior.",
+        "Trace export must remain allow-list based because it crosses many sensitive domain objects."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_promptfoo_interop_phase22.py",
+        "tests/test_exports_phase11.py",
+        "tests/test_privacy_repro_phase13.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "title": "Review Promptfoo and OpenTelemetry interoperability",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-015-review-privacy-reproducibility-and-audit-safety",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Privacy, reproducibility, and audit safety.",
+      "docs_to_read": [
+        "docs/privacy-repro-safety.md",
+        "docs/architecture.md",
+        "docs/headless-workflow.md",
+        "docs/data-model.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "MODEL_EVAL_LOCAL_ONLY=true",
+        "GET/PUT /projects/{project_slug}/provider-policy",
+        "ExecutionControls.from_snapshot",
+        "build_experiment_trace",
+        "evalbench export --format otel-json"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-PRIVACY-AUDIT-SAFETY",
+      "files_allowed_to_edit": [
+        "backend/model_eval_api/executor.py",
+        "backend/model_eval_api/providers/settings.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "backend/model_eval_api/executor.py",
+        "backend/model_eval_api/providers/settings.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "backend/model_eval_api/main.py",
+        "backend/model_eval_api/headless.py",
+        "backend/model_eval_api/otel_export.py"
+      ],
+      "id": "SLICE-015",
+      "intended_behavior": "The system blocks unsafe outbound execution before provider calls, keeps provider credentials in environment variables, snapshots reproducibility metadata, and avoids leaking raw prompts, private artifacts, manifests, warmer text, request/response payloads, outputs, local paths, checksums, OCR text, or credentials into audit and trace metadata.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-015: Review Privacy, reproducibility, and audit safety",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "Live provider calls depend on environment credentials and explicit policy changes; accidental relaxation would increase egress risk.",
+        "Audit and trace redaction must stay synchronized with new model fields and export rows."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_privacy_repro_phase13.py",
+        "tests/test_provider_adapters_phase4.py",
+        "tests/test_executor_phase5.py",
+        "tests/test_exports_phase11.py",
+        "tests/test_artifacts_phase3.py"
+      ],
+      "title": "Review Privacy, reproducibility, and audit safety",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    },
+    {
+      "acceptance_criteria": [
+        "Review completed and any changes verified."
+      ],
+      "branch": "codebase-review/SLICE-016-review-copper-memo-demos-and-v2-readiness-audit",
+      "dependencies": [],
+      "description": "Review and identify safe refactor opportunities for Copper memo demos and V2 readiness audit.",
+      "docs_to_read": [
+        "docs/copper-memo-demo.md",
+        "docs/v2-demo.md",
+        "docs/product-brief.md",
+        "docs/v2-implementation-task-list.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "entry_points": [
+        "python -m model_eval_cli.main seed copper-memo --format json",
+        "python -m model_eval_cli.main demo copper-memo --export-dir <path>",
+        "python -m model_eval_cli.main demo v2 --export-dir <path>",
+        "evalbench demo copper-memo",
+        "evalbench demo v2",
+        "examples/copper_memo_context_sensitivity.yaml",
+        "examples/v2_copper_benchmark_suite.yaml"
+      ],
+      "expected_pr_size": {
+        "max_files_changed": 8,
+        "max_lines_changed_soft": 500
+      },
+      "feature_id": "FEATURE-DEMO-READINESS",
+      "files_allowed_to_edit": [
+        "backend/model_eval_api/copper_seed.py",
+        "backend/model_eval_api/copper_demo.py",
+        "backend/model_eval_api/v2_demo.py",
+        "cli/model_eval_cli/seed_data.py",
+        "cli/model_eval_cli/main.py"
+      ],
+      "files_not_allowed_to_edit": [
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock"
+      ],
+      "files_to_read": [
+        "backend/model_eval_api/copper_seed.py",
+        "backend/model_eval_api/copper_demo.py",
+        "backend/model_eval_api/v2_demo.py",
+        "cli/model_eval_cli/seed_data.py",
+        "cli/model_eval_cli/main.py",
+        "examples/copper_memo_context_sensitivity.yaml",
+        "examples/v2_copper_benchmark_suite.yaml",
+        "tests/fixtures/v2_demo_copper_context.txt",
+        "tests/fixtures/v2_demo_copper_chart.svg"
+      ],
+      "id": "SLICE-016",
+      "intended_behavior": "Developers can run MVP and V2 demo commands repeatedly, inspect outputs in the UI, and use generated reports as local artifacts while keeping generated export files out of git.",
+      "invariants": [
+        "Preserve documented behavior."
+      ],
+      "non_goals": [
+        "New product behavior."
+      ],
+      "parallel_conflicts": [],
+      "pr_title": "[codebase-review] SLICE-016: Review Copper memo demos and V2 readiness audit",
+      "refactor_targets": [
+        "Remove local duplication if safe."
+      ],
+      "review_focus": [
+        "correctness",
+        "tests",
+        "scope"
+      ],
+      "review_questions": [
+        "Does code match intended behavior?"
+      ],
+      "risk": "medium",
+      "risk_notes": [
+        "Synthetic demo signals are useful for smoke coverage but should not be treated as real provider quality evidence.",
+        "Generated export directories should remain uncommitted unless a future task explicitly asks for checked-in sample output."
+      ],
+      "slice_type": "review-only",
+      "tests_to_read": [
+        "tests/test_cli_seed.py",
+        "tests/test_copper_demo_phase12.py",
+        "tests/test_v2_demo_phase25.py",
+        "tests/test_manifest_contract.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "title": "Review Copper memo demos and V2 readiness audit",
+      "verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "why_this_slice_exists": "Initial conservative slice from feature model."
+    }
+  ],
+  "waves": [
+    {
+      "integration_order": [
+        "SLICE-001"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-001"
+      ],
+      "wave": 1
+    },
+    {
+      "integration_order": [
+        "SLICE-002"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-002"
+      ],
+      "wave": 2
+    },
+    {
+      "integration_order": [
+        "SLICE-003"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-003"
+      ],
+      "wave": 3
+    },
+    {
+      "integration_order": [
+        "SLICE-004"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-004"
+      ],
+      "wave": 4
+    },
+    {
+      "integration_order": [
+        "SLICE-005"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-005"
+      ],
+      "wave": 5
+    },
+    {
+      "integration_order": [
+        "SLICE-006"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-006"
+      ],
+      "wave": 6
+    },
+    {
+      "integration_order": [
+        "SLICE-007"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-007"
+      ],
+      "wave": 7
+    },
+    {
+      "integration_order": [
+        "SLICE-008"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-008"
+      ],
+      "wave": 8
+    },
+    {
+      "integration_order": [
+        "SLICE-009"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-009"
+      ],
+      "wave": 9
+    },
+    {
+      "integration_order": [
+        "SLICE-010"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-010"
+      ],
+      "wave": 10
+    },
+    {
+      "integration_order": [
+        "SLICE-011"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-011"
+      ],
+      "wave": 11
+    },
+    {
+      "integration_order": [
+        "SLICE-012"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-012"
+      ],
+      "wave": 12
+    },
+    {
+      "integration_order": [
+        "SLICE-013"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-013"
+      ],
+      "wave": 13
+    },
+    {
+      "integration_order": [
+        "SLICE-014"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-014"
+      ],
+      "wave": 14
+    },
+    {
+      "integration_order": [
+        "SLICE-015"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-015"
+      ],
+      "wave": 15
+    },
+    {
+      "integration_order": [
+        "SLICE-016"
+      ],
+      "parallel_safety_rationale": "Not proven; serialized by default.",
+      "post_wave_verification_commands": [
+        "make lint",
+        "make test",
+        "cd frontend && npm run test",
+        "cd frontend && npm run build",
+        "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "preconditions": [],
+      "slice_ids": [
+        "SLICE-016"
+      ],
+      "wave": 16
+    }
+  ]
+}

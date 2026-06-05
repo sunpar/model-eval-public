@@ -1,0 +1,17 @@
+id,feature_id,title,branch,risk
+SLICE-001,FEATURE-DEV-FOUNDATION,Review Development foundation and CI,codebase-review/SLICE-001-review-development-foundation-and-ci,medium
+SLICE-002,FEATURE-WARMER-FIRST-PRODUCT-MODEL,Review Warmer-first product and data model,codebase-review/SLICE-002-review-warmer-first-product-and-data-model,medium
+SLICE-003,FEATURE-MANIFEST-RUN-GENERATION,Review Manifest contract and run generation,codebase-review/SLICE-003-review-manifest-contract-and-run-generation,medium
+SLICE-004,FEATURE-PERSISTENCE-SNAPSHOTS,"Review Persistence, migrations, and immutable snapshots",codebase-review/SLICE-004-review-persistence-migrations-and-immutable-snapshots,medium
+SLICE-005,FEATURE-API-LIBRARY-EXPERIMENTS,Review Project library and experiment API,codebase-review/SLICE-005-review-project-library-and-experiment-api,medium
+SLICE-006,FEATURE-PROVIDER-EXECUTOR-QUEUE,"Review Provider adapters, executor lifecycle, and queueing",codebase-review/SLICE-006-review-provider-adapters-executor-lifecycle-and-queueing,medium
+SLICE-007,FEATURE-ARTIFACT-PREPROCESSING,Review Artifact storage and preprocessing,codebase-review/SLICE-007-review-artifact-storage-and-preprocessing,medium
+SLICE-008,FEATURE-BENCHMARK-REPLICATES,"Review Benchmark suites, dataset splits, and replicates",codebase-review/SLICE-008-review-benchmark-suites-dataset-splits-and-replicates,medium
+SLICE-009,FEATURE-REVIEW-QUEUES-TAXONOMY,"Review Blind review, reviewer queues, and failure taxonomies",codebase-review/SLICE-009-review-blind-review-reviewer-queues-and-failure-taxonomies,medium
+SLICE-010,FEATURE-EVALUATORS-JUDGES-METRICS,"Review Deterministic evaluators, LLM judges, and metric adapters",codebase-review/SLICE-010-review-deterministic-evaluators-llm-judges-and-metric-adapters,medium
+SLICE-011,FEATURE-RESULTS-ANALYTICS,"Review Results analytics, divergence, uncertainty, and frontier",codebase-review/SLICE-011-review-results-analytics-divergence-uncertainty-and-frontier,medium
+SLICE-012,FEATURE-FRONTEND-WORKBENCH,Review Frontend workbench,codebase-review/SLICE-012-review-frontend-workbench,medium
+SLICE-013,FEATURE-HEADLESS-CLI-EXPORTS,Review Headless CLI and stable exports,codebase-review/SLICE-013-review-headless-cli-and-stable-exports,medium
+SLICE-014,FEATURE-INTEROP-PROMPTFOO-OTEL,Review Promptfoo and OpenTelemetry interoperability,codebase-review/SLICE-014-review-promptfoo-and-opentelemetry-interoperability,medium
+SLICE-015,FEATURE-PRIVACY-AUDIT-SAFETY,"Review Privacy, reproducibility, and audit safety",codebase-review/SLICE-015-review-privacy-reproducibility-and-audit-safety,medium
+SLICE-016,FEATURE-DEMO-READINESS,Review Copper memo demos and V2 readiness audit,codebase-review/SLICE-016-review-copper-memo-demos-and-v2-readiness-audit,medium

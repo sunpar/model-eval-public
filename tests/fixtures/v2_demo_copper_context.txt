@@ -1,0 +1,12 @@
+SYNTHETIC LOCAL TEST FIXTURE
+
+This fixture is an invented copper market context for repeatable local tests.
+It contains no customer data, no provider output, and no external research.
+
+Claims:
+- Refined copper inventories are tight in the synthetic scenario.
+- Mine disruption risk is high enough to affect concentrate treatment charges.
+- A prudent memo separates physical supply, demand sensitivity, and trade expression.
+
+Reference:
+Use bracket citations such as [copper_context_1] when grounding synthetic answers.

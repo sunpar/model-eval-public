@@ -1,0 +1,69 @@
+id: v2_copper_benchmark_suite
+name: V2 Copper Benchmark Suite
+version: 1
+description: Local-only synthetic V2 demo suite extending the copper memo scenario.
+controls:
+  local_only: true
+  random_seed: 25
+  randomize_run_order: false
+  replicates: 2
+splits:
+  dev:
+    cases:
+      - chile_copper_memo
+  all:
+    cases:
+      - chile_copper_memo
+cases:
+  - id: chile_copper_memo
+    version: 1
+models:
+  - id: openai_gpt_high
+    version: 1
+  - id: claude_high
+    version: 1
+system_prompts:
+  - id: expert_investment_analyst_v3
+    version: 3
+  - id: general_finance_assistant_v2
+    version: 2
+warmers:
+  - id: none
+    version: 1
+  - id: copper_expert_user_v2
+    version: 2
+  - id: copper_low_knowledge_user_v1
+    version: 1
+  - id: copper_adversarial_user_v1
+    version: 1
+evaluators:
+  - id: investment_memo_required_sections_v1
+    version: 1
+  - id: investment_memo_token_budget_v1
+    version: 1
+  - id: investment_memo_llm_judge_v2
+    version: 2
+  - id: hallucinated_numbers_check_v1
+    version: 1
+judge_config:
+  id: v2_synthetic_judge
+  model_config_id: openai_gpt_high
+  calibration_status: local_synthetic
+taxonomy:
+  id: v2_copper_failure_taxonomy
+  tags:
+    - too generic
+    - missed transmission mechanism
+    - weak trade expression
+    - weak risks
+    - citation gap
+reviewers:
+  - id: v2_alice
+    name: V2 Alice
+  - id: v2_bob
+    name: V2 Bob
+metric_adapters:
+  - id: v2_retrieval_precision
+    kind: retrieval_precision
+  - id: v2_citation_coverage
+    kind: citation_coverage

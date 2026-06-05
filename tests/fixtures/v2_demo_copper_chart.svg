@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180" role="img" aria-label="Synthetic copper inventory chart">
+  <rect width="320" height="180" fill="#f7f5ef"/>
+  <line x1="40" y1="145" x2="285" y2="145" stroke="#333333" stroke-width="2"/>
+  <line x1="40" y1="30" x2="40" y2="145" stroke="#333333" stroke-width="2"/>
+  <polyline points="45,70 92,82 139,88 186,105 233,119 280,130" fill="none" stroke="#0f766e" stroke-width="4"/>
+  <circle cx="45" cy="70" r="4" fill="#0f766e"/>
+  <circle cx="280" cy="130" r="4" fill="#0f766e"/>
+  <text x="42" y="24" font-family="Arial, sans-serif" font-size="14" fill="#333333">Synthetic inventories</text>
+  <text x="238" y="164" font-family="Arial, sans-serif" font-size="11" fill="#333333">local fixture</text>
+</svg>

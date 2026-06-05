@@ -1,0 +1,50 @@
+name: copper_memo_context_sensitivity
+cases:
+  - id: chile_copper_memo
+    prompt: |
+      Write me a proper investment memo on the Chilean copper disruption scenario we discussed.
+      Be as thorough and specific as you can. Do not hold back.
+
+models:
+  - id: openai_gpt_high
+    provider: openai
+    model: gpt-5.5
+    params:
+      reasoning_effort: high
+      temperature: 0.2
+  - id: claude_high
+    provider: anthropic
+    model: claude-opus
+    params:
+      thinking_budget: high
+      temperature: 0.2
+
+system_prompts:
+  - expert_investment_analyst_v3
+  - general_finance_assistant_v2
+
+warmers:
+  - none
+  - copper_expert_user_v2
+  - copper_low_knowledge_user_v1
+  - copper_adversarial_user_v1
+
+design:
+  type: full_factorial
+  replicates: 2
+  randomize_run_order: true
+
+evaluation:
+  blind_review: true
+  human_pairwise: true
+  evaluators:
+    - investment_memo_required_sections_v1
+    - investment_memo_token_budget_v1
+    - investment_memo_llm_judge_v2
+    - hallucinated_numbers_check_v1
+
+controls:
+  max_parallel_requests: 4
+  max_total_cost_usd: 50
+  retry_failed: true
+  cache_provider_calls: true

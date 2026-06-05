@@ -1,0 +1,1562 @@
+{
+  "repo": {
+    "name": "model-eval",
+    "root": ".",
+    "analyzed_at": "2026-05-22T10:33:19-04:00",
+    "primary_languages": [
+      "Python 3.11",
+      "TypeScript",
+      "SQL/Alembic",
+      "Markdown/YAML"
+    ],
+    "package_managers": [
+      "pip/setuptools",
+      "npm",
+      "Makefile"
+    ],
+    "test_commands": [
+      "make lint",
+      "make test",
+      "cd frontend && npm run test",
+      "cd frontend && npm run build",
+      "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
+    ],
+    "ci_files": [
+      ".github/workflows/ci.yml"
+    ]
+  },
+  "codebase_summary": "Model Eval is a local-first workbench for testing how prior conversation context changes model behavior on the same final task. The implementation spans a FastAPI backend, SQLAlchemy/Alembic persistence, provider execution and safety gates, Typer CLI workflows, React/Vite frontend, analytics/evaluator services, Promptfoo/OpenTelemetry interoperability, and synthetic copper demos. The main product shape is warmer-first context-sensitivity analysis with immutable experiment snapshots, logical runs separated from concrete run attempts, blind review, judge/metric evaluation, and reproducible exports.",
+  "architecture": {
+    "components": [
+      {
+        "id": "COMP-DOCS-PRODUCT",
+        "name": "Product and architecture documentation",
+        "description": "Defines the warmer-first product wedge, product modes, data hierarchy, delivery phases, safety posture, analytics semantics, and demo workflows.",
+        "paths": [
+          "README.md",
+          "FEATURE_INVENTORY.md",
+          "docs/product-brief.md",
+          "docs/architecture.md",
+          "docs/data-model.md",
+          "docs/mvp-roadmap.md",
+          "docs/v2-implementation-task-list.md",
+          "docs/privacy-repro-safety.md",
+          "docs/results-analytics.md",
+          "docs/headless-workflow.md",
+          "docs/v2-demo.md"
+        ],
+        "entry_points": [],
+        "dependencies": []
+      },
+      {
+        "id": "COMP-BACKEND-API",
+        "name": "FastAPI application",
+        "description": "HTTP boundary for manifests, project library records, experiments, monitor state, review queues, analytics, exports, artifact preprocessing, provider policy, Promptfoo import, judges, and metric adapters.",
+        "paths": [
+          "backend/model_eval_api/main.py",
+          "backend/model_eval_api/schemas.py",
+          "backend/model_eval_api/response_payloads.py"
+        ],
+        "entry_points": [
+          "make api",
+          "uvicorn model_eval_api.main:app",
+          "GET /health",
+          "POST /manifests/preview",
+          "POST /projects/{project_slug}/experiments/drafts",
+          "POST /projects/{project_slug}/experiments/{experiment_id}/queue",
+          "GET /monitor/experiments/{experiment_id}/analytics"
+        ],
+        "dependencies": [
+          "COMP-PERSISTENCE",
+          "COMP-EXECUTION",
+          "COMP-ANALYTICS"
+        ]
+      },
+      {
+        "id": "COMP-PERSISTENCE",
+        "name": "Persistence and snapshots",
+        "description": "SQLAlchemy models, repositories, immutable snapshot builders, database configuration, and Alembic migration chain for workspaces, projects, library records, experiments, runs, attempts, scores, review sets, judges, metric adapters, suites, artifacts, and audit logs.",
+        "paths": [
+          "backend/model_eval_api/persistence/database.py",
+          "backend/model_eval_api/persistence/models.py",
+          "backend/model_eval_api/persistence/repositories.py",
+          "backend/model_eval_api/persistence/snapshots.py",
+          "alembic/versions"
+        ],
+        "entry_points": [
+          "MODEL_EVAL_DATABASE_URL",
+          "alembic upgrade head"
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "COMP-EXECUTION",
+        "name": "Execution, providers, and queueing",
+        "description": "Manifest expansion, provider adapters, execution lifecycle, retries, cache hits, cancellations, Redis/RQ jobs, provider policy gates, cost/context guards, and dry-run/local-only paths.",
+        "paths": [
+          "backend/model_eval_api/manifest.py",
+          "backend/model_eval_api/run_generation.py",
+          "backend/model_eval_api/executor.py",
+          "backend/model_eval_api/queue.py",
+          "backend/model_eval_api/providers"
+        ],
+        "entry_points": [
+          "POST /projects/{project_slug}/experiments/{experiment_id}/queue",
+          "POST /monitor/runs/{run_id}/retry",
+          "POST /monitor/experiments/{experiment_id}/cancel",
+          "make worker"
+        ],
+        "dependencies": [
+          "COMP-PERSISTENCE"
+        ]
+      },
+      {
+        "id": "COMP-ANALYTICS",
+        "name": "Evaluators and analytics",
+        "description": "Deterministic evaluators, LLM judge execution/calibration, local metric adapters, divergence/carryover analytics, uncertainty summaries, cost-quality frontier rows, and export aggregation.",
+        "paths": [
+          "backend/model_eval_api/deterministic_evaluators.py",
+          "backend/model_eval_api/llm_judges.py",
+          "backend/model_eval_api/metric_adapters.py",
+          "backend/model_eval_api/metric_adapter_execution.py",
+          "backend/model_eval_api/results_analytics.py"
+        ],
+        "entry_points": [
+          "GET /monitor/experiments/{experiment_id}/analytics",
+          "POST /monitor/experiments/{experiment_id}/judges/{evaluator_id}/run",
+          "POST /monitor/experiments/{experiment_id}/metric-adapters/run",
+          "evalbench score",
+          "evalbench judge",
+          "evalbench metric-adapters"
+        ],
+        "dependencies": [
+          "COMP-PERSISTENCE",
+          "COMP-EXECUTION"
+        ]
+      },
+      {
+        "id": "COMP-FRONTEND",
+        "name": "React workbench",
+        "description": "Single-page Vite/React UI for library management, experiment builder, run monitor, comparison workspace, results analytics, artifact preprocessing controls, judges, metric adapters, suites, Promptfoo import/export, and V2 demo smoke path.",
+        "paths": [
+          "frontend/src/App.tsx",
+          "frontend/src/api.ts",
+          "frontend/src/experimentBuilder.ts",
+          "frontend/src/styles.css",
+          "frontend/src/main.tsx"
+        ],
+        "entry_points": [
+          "make frontend",
+          "npm run dev",
+          "npm run build",
+          "frontend/src/main.tsx"
+        ],
+        "dependencies": [
+          "COMP-BACKEND-API"
+        ]
+      },
+      {
+        "id": "COMP-CLI",
+        "name": "Typer CLI and headless services",
+        "description": "Local-first command interface for manifest validation/preview/expand/run, comparison, blind review export, scoring, judges, metric adapters, Promptfoo import, suite runs, exports, and demos.",
+        "paths": [
+          "cli/model_eval_cli/main.py",
+          "cli/model_eval_cli/seed_data.py",
+          "backend/model_eval_api/headless.py",
+          "pyproject.toml"
+        ],
+        "entry_points": [
+          "evalbench",
+          "python -m model_eval_cli.main preview",
+          "python -m model_eval_cli.main demo copper-memo",
+          "python -m model_eval_cli.main demo v2"
+        ],
+        "dependencies": [
+          "COMP-PERSISTENCE",
+          "COMP-EXECUTION",
+          "COMP-ANALYTICS",
+          "COMP-INTEROP"
+        ]
+      },
+      {
+        "id": "COMP-INTEROP",
+        "name": "Interop and metadata exports",
+        "description": "Promptfoo import/export mapping, OpenTelemetry-compatible metadata trace export, stable Markdown/CSV/JSON exports, and privacy-preserving export boundaries.",
+        "paths": [
+          "backend/model_eval_api/promptfoo.py",
+          "backend/model_eval_api/otel_export.py",
+          "backend/model_eval_api/headless.py"
+        ],
+        "entry_points": [
+          "evalbench import promptfoo",
+          "evalbench export --format promptfoo",
+          "evalbench export --format otel-json",
+          "GET /monitor/experiments/{experiment_id}/exports"
+        ],
+        "dependencies": [
+          "COMP-PERSISTENCE",
+          "COMP-ANALYTICS"
+        ]
+      },
+      {
+        "id": "COMP-TESTS-CI",
+        "name": "Tests and CI",
+        "description": "Phase-oriented backend tests, frontend Vitest coverage, example manifest preview, Python lint/compile checks, frontend build, and GitHub Actions CI.",
+        "paths": [
+          "tests",
+          "frontend/src/App.test.tsx",
+          "frontend/src/experimentBuilder.test.ts",
+          ".github/workflows/ci.yml",
+          "Makefile"
+        ],
+        "entry_points": [
+          "make lint",
+          "make test",
+          "cd frontend && npm run test",
+          "cd frontend && npm run build"
+        ],
+        "dependencies": []
+      }
+    ],
+    "data_flow": [
+      "Users create or import cases, artifacts, system prompts, warmers, model configs, evaluators, judges, metric adapters, and benchmark suites through the frontend, API, CLI, or import paths.",
+      "Experiments snapshot selected library versions and manifest controls, then expand full-factorial or suite-backed dimensions into logical runs and replicate attempts.",
+      "The executor applies local-only, provider policy, context budget, cost cap, cache, retry, and cancellation rules before adapter execution or dry-run response creation.",
+      "Attempts, scores, review decisions, judge executions, metric adapter scores, artifact preprocessing runs, and audit events are persisted as separate records.",
+      "Analytics and exports aggregate terminal attempts and typed scores into review, lift, divergence, uncertainty, frontier, and reproducibility views."
+    ],
+    "entry_points": [
+      "make api",
+      "make frontend",
+      "make worker",
+      "make preview-example",
+      "evalbench validate",
+      "evalbench preview",
+      "evalbench expand",
+      "evalbench run",
+      "evalbench compare",
+      "evalbench review",
+      "evalbench score",
+      "evalbench judge",
+      "evalbench metric-adapters",
+      "evalbench suite run",
+      "evalbench import promptfoo",
+      "evalbench export",
+      "evalbench demo copper-memo",
+      "evalbench demo v2"
+    ]
+  },
+  "features": [
+    {
+      "id": "FEATURE-DEV-FOUNDATION",
+      "name": "Development foundation and CI",
+      "category": "internal-platform",
+      "summary": "Local bootstrap, packaging, service startup, lint/test/build commands, Docker Compose services, and CI workflow.",
+      "intended_behavior": "A developer can install Python and frontend dependencies, start API/frontend/worker services, run manifest preview, and rely on CI for compile, lint, Python tests, frontend install, and frontend build.",
+      "user_or_system_value": "Keeps repository setup repeatable and gives reviewers executable evidence for future changes.",
+      "entry_points": [
+        "make install",
+        "make lint",
+        "make test",
+        "make build",
+        "make api",
+        "make worker",
+        "make frontend",
+        "make preview-example",
+        "docker compose up -d postgres redis",
+        ".github/workflows/ci.yml"
+      ],
+      "code_paths": [
+        "Makefile",
+        "pyproject.toml",
+        "docker-compose.yml",
+        ".env.example",
+        ".github/workflows/ci.yml",
+        "frontend/package.json",
+        "frontend/vite.config.ts",
+        "frontend/tsconfig.json"
+      ],
+      "docs": [
+        "README.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        ".github/workflows/ci.yml",
+        "tests/test_manifest_contract.py",
+        "frontend/src/App.test.tsx",
+        "frontend/src/experimentBuilder.test.ts"
+      ],
+      "data_models": [],
+      "related_components": [
+        "COMP-TESTS-CI"
+      ],
+      "related_features": [],
+      "known_risks": [
+        "CI does not exercise Docker Compose services or an interactive browser smoke path.",
+        "Branch protection requirements may include checks outside the checked-in workflow."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "Whether branch protection requires additional checks beyond the checked-in GitHub Actions workflow."
+      ],
+      "evidence": [
+        "README.md",
+        "Makefile",
+        "pyproject.toml",
+        "frontend/package.json",
+        ".github/workflows/ci.yml",
+        "FEATURE_INVENTORY.md"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-WARMER-FIRST-PRODUCT-MODEL",
+      "name": "Warmer-first product and data model",
+      "category": "product-domain",
+      "summary": "Product scope centers conversation warmers as structured, versioned experimental variables for context-sensitivity studies.",
+      "intended_behavior": "Users compare the same final task across controlled variations in model, system prompt, artifact inputs, evaluators, and structured prior conversation context.",
+      "user_or_system_value": "Preserves the distinctive path-dependence wedge instead of turning the repo into a generic eval dashboard.",
+      "entry_points": [
+        "Library: warmers",
+        "Experiment Builder warmer selection",
+        "examples/copper_memo_context_sensitivity.yaml"
+      ],
+      "code_paths": [
+        "backend/model_eval_api/manifest.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "frontend/src/experimentBuilder.ts",
+        "frontend/src/App.tsx"
+      ],
+      "docs": [
+        "docs/product-brief.md",
+        "docs/adr/0001-warmers-as-first-class-entities.md",
+        "docs/data-model.md",
+        "docs/architecture.md",
+        "README.md"
+      ],
+      "tests": [
+        "tests/test_manifest_contract.py",
+        "tests/test_persistence_phase2.py",
+        "tests/test_cli_seed.py",
+        "frontend/src/experimentBuilder.test.ts",
+        "frontend/src/App.test.tsx"
+      ],
+      "data_models": [
+        "ConversationWarmer",
+        "Case",
+        "SystemPrompt",
+        "ModelConfig",
+        "Evaluator",
+        "Experiment",
+        "Run",
+        "RunAttempt",
+        "Score"
+      ],
+      "related_components": [
+        "COMP-DOCS-PRODUCT",
+        "COMP-PERSISTENCE",
+        "COMP-FRONTEND"
+      ],
+      "related_features": [
+        "FEATURE-MANIFEST-RUN-GENERATION",
+        "FEATURE-RESULTS-ANALYTICS"
+      ],
+      "known_risks": [
+        "Context-sensitivity metrics can be over-interpreted if users ignore warnings about heuristic or uncalibrated signals.",
+        "Broad V2/V3 backlog pressure could dilute the warmer-first wedge."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "No explicit production user roles or tenancy model beyond workspace/project scope are documented for multi-user use."
+      ],
+      "evidence": [
+        "docs/product-brief.md",
+        "docs/adr/0001-warmers-as-first-class-entities.md",
+        "docs/data-model.md",
+        "backend/model_eval_api/persistence/models.py",
+        "frontend/src/experimentBuilder.test.ts"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-MANIFEST-RUN-GENERATION",
+      "name": "Manifest contract and run generation",
+      "category": "core-workflow",
+      "summary": "YAML/JSON manifests model cases, artifacts, prompts, warmers, models, evaluators, design controls, benchmark suite references, and reliability replicates.",
+      "intended_behavior": "The same parser and expander validate manifests, report actionable errors, generate deterministic logical runs and attempts, and preserve normalized plus raw provider fields.",
+      "user_or_system_value": "Gives both API and CLI users a reproducible experiment contract before persistence or provider execution.",
+      "entry_points": [
+        "evalbench validate <manifest>",
+        "evalbench preview <manifest>",
+        "evalbench expand <manifest>",
+        "POST /manifests/validate",
+        "POST /manifests/preview",
+        "POST /projects/{project_slug}/experiments/preview"
+      ],
+      "code_paths": [
+        "backend/model_eval_api/manifest.py",
+        "backend/model_eval_api/run_generation.py",
+        "backend/model_eval_api/main.py",
+        "cli/model_eval_cli/main.py",
+        "examples/copper_memo_context_sensitivity.yaml",
+        "examples/v2_copper_benchmark_suite.yaml"
+      ],
+      "docs": [
+        "README.md",
+        "docs/architecture.md",
+        "docs/headless-workflow.md",
+        "docs/v2-implementation-task-list.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "tests/test_manifest_contract.py",
+        "tests/test_library_builder_phase6.py",
+        "tests/test_benchmark_suites_phase17.py",
+        "tests/test_promptfoo_interop_phase22.py",
+        "frontend/src/experimentBuilder.test.ts"
+      ],
+      "data_models": [
+        "ExperimentManifest",
+        "DesignManifest",
+        "ControlsManifest",
+        "ManifestPreviewResponse",
+        "LogicalRunDefinition",
+        "RunAttemptDefinition"
+      ],
+      "related_components": [
+        "COMP-EXECUTION",
+        "COMP-BACKEND-API",
+        "COMP-CLI"
+      ],
+      "related_features": [
+        "FEATURE-BENCHMARK-REPLICATES",
+        "FEATURE-PERSISTENCE-SNAPSHOTS"
+      ],
+      "known_risks": [
+        "Manifest expansion is central to many surfaces; schema drift can break API, CLI, frontend builder, Promptfoo import/export, and suite reruns together.",
+        "Unsupported design types must continue to fail clearly rather than silently producing incomplete experiment matrices."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "The feature model did not run the full manifest test suite; evidence here is static plus existing test coverage paths."
+      ],
+      "evidence": [
+        "backend/model_eval_api/manifest.py",
+        "cli/model_eval_cli/main.py",
+        "tests/test_manifest_contract.py",
+        "frontend/src/experimentBuilder.ts",
+        "docs/headless-workflow.md"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-PERSISTENCE-SNAPSHOTS",
+      "name": "Persistence, migrations, and immutable snapshots",
+      "category": "data-platform",
+      "summary": "SQLAlchemy models, Alembic migrations, repository helpers, and snapshot builders preserve project-scoped library versions, experiment inputs, runs, attempts, scores, reviews, judges, metrics, suites, artifacts, and audit metadata.",
+      "intended_behavior": "Historical experiments remain reproducible when library records change, retries/reruns do not overwrite logical runs, and persisted payloads redact sensitive provider or artifact metadata where required.",
+      "user_or_system_value": "Supports auditability, reproducibility, and safe comparison of experimental results over time.",
+      "entry_points": [
+        "create_experiment_from_manifest",
+        "update_draft_experiment_from_manifest",
+        "record_run_attempt",
+        "record_score",
+        "alembic upgrade head"
+      ],
+      "code_paths": [
+        "backend/model_eval_api/persistence/database.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "alembic/versions"
+      ],
+      "docs": [
+        "docs/data-model.md",
+        "docs/privacy-repro-safety.md",
+        "docs/architecture.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "tests/test_persistence_phase2.py",
+        "tests/test_privacy_repro_phase13.py",
+        "tests/test_executor_phase5.py",
+        "tests/test_review_phase8.py",
+        "tests/test_review_queues_phase16.py",
+        "tests/test_llm_judges_phase14.py",
+        "tests/test_metric_adapters_phase21.py",
+        "tests/test_benchmark_suites_phase17.py"
+      ],
+      "data_models": [
+        "Workspace",
+        "Project",
+        "Case",
+        "Artifact",
+        "ArtifactPreprocessingRun",
+        "SystemPrompt",
+        "ConversationWarmer",
+        "ModelConfig",
+        "Evaluator",
+        "LLMJudgeConfig",
+        "MetricAdapterConfig",
+        "BenchmarkSuite",
+        "BenchmarkSuiteItem",
+        "Experiment",
+        "Run",
+        "RunAttempt",
+        "ProviderCallCache",
+        "JudgeExecution",
+        "AuditLog",
+        "Score",
+        "ReviewSet",
+        "ReviewItem",
+        "Reviewer",
+        "FailureTaxonomy",
+        "ReviewAssignment"
+      ],
+      "related_components": [
+        "COMP-PERSISTENCE"
+      ],
+      "related_features": [
+        "FEATURE-PRIVACY-AUDIT-SAFETY",
+        "FEATURE-REVIEW-QUEUES-TAXONOMY",
+        "FEATURE-EVALUATORS-JUDGES-METRICS",
+        "FEATURE-BENCHMARK-REPLICATES"
+      ],
+      "known_risks": [
+        "Repository helpers are a large shared surface; small schema or snapshot changes can affect API, CLI, frontend, analytics, exports, and demos.",
+        "SQLite-oriented test paths may not catch every Postgres-specific migration or constraint behavior."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "SQLite Alembic upgrade is covered by tests and release-readiness verification, but live Postgres migration smoke remains an environment-level check."
+      ],
+      "evidence": [
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "alembic/versions",
+        "tests/test_persistence_phase2.py"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-API-LIBRARY-EXPERIMENTS",
+      "name": "Project library and experiment API",
+      "category": "api",
+      "summary": "FastAPI endpoints expose project-scoped libraries, provider policy, experiment previews/drafts/queueing, monitor reads, analytics, exports, review sets, judges, metric adapters, benchmark suites, and artifact preprocessing controls.",
+      "intended_behavior": "The frontend and external clients can manage Model Eval workflows through typed JSON boundaries while backend services enforce project scope and shared validation.",
+      "user_or_system_value": "Turns the persistence and execution services into a usable application boundary.",
+      "entry_points": [
+        "GET /health",
+        "GET/POST /projects/{project_slug}/library/*",
+        "POST /projects/{project_slug}/experiments/preview",
+        "POST /projects/{project_slug}/experiments/drafts",
+        "PUT /projects/{project_slug}/experiments/{experiment_id}/draft",
+        "POST /projects/{project_slug}/experiments/{experiment_id}/queue",
+        "GET /monitor/experiments",
+        "GET /monitor/experiments/{experiment_id}/runs",
+        "GET /monitor/experiments/{experiment_id}/analytics",
+        "GET /monitor/experiments/{experiment_id}/exports"
+      ],
+      "code_paths": [
+        "backend/model_eval_api/main.py",
+        "backend/model_eval_api/schemas.py",
+        "backend/model_eval_api/response_payloads.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/queue.py"
+      ],
+      "docs": [
+        "docs/architecture.md",
+        "docs/headless-workflow.md",
+        "docs/privacy-repro-safety.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "tests/test_manifest_contract.py",
+        "tests/test_library_builder_phase6.py",
+        "tests/test_executor_phase5.py",
+        "tests/test_results_analytics_phase10.py",
+        "tests/test_review_phase8.py",
+        "tests/test_review_queues_phase16.py",
+        "tests/test_llm_judges_phase14.py",
+        "tests/test_llm_judge_execution_phase15.py",
+        "tests/test_metric_adapters_phase21.py",
+        "tests/test_promptfoo_interop_phase22.py"
+      ],
+      "data_models": [
+        "Pydantic request models in backend/model_eval_api/schemas.py",
+        "ORM payload helpers in backend/model_eval_api/main.py"
+      ],
+      "related_components": [
+        "COMP-BACKEND-API",
+        "COMP-PERSISTENCE",
+        "COMP-FRONTEND"
+      ],
+      "related_features": [
+        "FEATURE-FRONTEND-WORKBENCH",
+        "FEATURE-PROVIDER-EXECUTOR-QUEUE"
+      ],
+      "known_risks": [
+        "API response DTOs are manually mirrored by TypeScript types, so drift can create frontend runtime failures.",
+        "Many endpoints live in a single main.py module, increasing merge conflict and review risk for future API changes."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "No OpenAPI contract snapshot or generated client is checked in."
+      ],
+      "evidence": [
+        "backend/model_eval_api/main.py",
+        "backend/model_eval_api/schemas.py",
+        "frontend/src/api.ts",
+        "tests/test_library_builder_phase6.py",
+        "tests/test_results_analytics_phase10.py"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-PROVIDER-EXECUTOR-QUEUE",
+      "name": "Provider adapters, executor lifecycle, and queueing",
+      "category": "execution",
+      "summary": "Provider adapter protocol, OpenAI and Anthropic adapters, execution lifecycle, dry-runs, retries, cache, cancellations, context/cost gates, policy blocks, and RQ job wrappers.",
+      "intended_behavior": "Runs advance through safe local-first execution; outbound calls require explicit policy clearance, and attempts preserve provider payloads, errors, timing, tokens, cost, retry, replicate, and cache metadata.",
+      "user_or_system_value": "Lets users evaluate real or synthetic provider outputs without sacrificing reproducibility or safety controls.",
+      "entry_points": [
+        "execute_experiment",
+        "execute_run",
+        "make worker",
+        "POST /monitor/runs/{run_id}/retry",
+        "POST /monitor/experiments/{experiment_id}/cancel",
+        "evalbench run <manifest> --dry-run --local-only"
+      ],
+      "code_paths": [
+        "backend/model_eval_api/executor.py",
+        "backend/model_eval_api/execution_states.py",
+        "backend/model_eval_api/queue.py",
+        "backend/model_eval_api/providers/base.py",
+        "backend/model_eval_api/providers/openai.py",
+        "backend/model_eval_api/providers/anthropic.py",
+        "backend/model_eval_api/providers/settings.py",
+        "backend/model_eval_api/providers/pricing.py",
+        "backend/model_eval_api/providers/errors.py"
+      ],
+      "docs": [
+        "docs/architecture.md",
+        "docs/privacy-repro-safety.md",
+        "docs/headless-workflow.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "tests/test_provider_adapters_phase4.py",
+        "tests/test_executor_phase5.py",
+        "tests/test_privacy_repro_phase13.py",
+        "tests/test_exports_phase11.py",
+        "tests/test_llm_judge_execution_phase15.py"
+      ],
+      "data_models": [
+        "Run",
+        "RunAttempt",
+        "ProviderCallCache",
+        "AuditLog",
+        "ExecutionControls",
+        "ProviderRequest",
+        "ProviderResponse"
+      ],
+      "related_components": [
+        "COMP-EXECUTION"
+      ],
+      "related_features": [
+        "FEATURE-PRIVACY-AUDIT-SAFETY",
+        "FEATURE-BENCHMARK-REPLICATES",
+        "FEATURE-EVALUATORS-JUDGES-METRICS"
+      ],
+      "known_risks": [
+        "Provider APIs and pricing metadata can drift outside the repo; adapters need periodic live-contract review before production use.",
+        "Queue wrappers are intentionally thin and testable without Redis, but real worker/runtime behavior still needs environment-level smoke coverage."
+      ],
+      "doc_code_mismatches": [
+        "Architecture describes Redis plus worker queue as a system component; tests primarily exercise queue wiring without requiring a live Redis worker."
+      ],
+      "unknowns": [
+        "Whether current OpenAI/Anthropic live APIs still match the adapter assumptions was not verified in this no-network/static task."
+      ],
+      "evidence": [
+        "backend/model_eval_api/executor.py",
+        "backend/model_eval_api/providers/openai.py",
+        "backend/model_eval_api/providers/anthropic.py",
+        "backend/model_eval_api/queue.py",
+        "tests/test_provider_adapters_phase4.py",
+        "tests/test_executor_phase5.py"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "FEATURE-ARTIFACT-PREPROCESSING",
+      "name": "Artifact storage and preprocessing",
+      "category": "data-ingest",
+      "summary": "Local artifact registration and derived preprocessing records for PDF text, page screenshots, normalized images, OCR text, selected figures, tables, retrieval chunks, paper cards, and explicit model input snapshots.",
+      "intended_behavior": "Runs record exactly what model inputs used, derived outputs remain metadata-first and local, unsafe paths or raw private payloads are excluded from API previews and export metadata, and missing derived inputs fail before provider execution.",
+      "user_or_system_value": "Makes artifact-heavy evaluations reproducible without committing private source files or generated previews.",
+      "entry_points": [
+        "POST /projects/{project_slug}/library/artifacts",
+        "PATCH /projects/{project_slug}/library/artifacts/{artifact_ref}/input-mode",
+        "POST /projects/{project_slug}/library/artifacts/{artifact_ref}/preprocessing-runs",
+        "GET /projects/{project_slug}/library/artifacts/{artifact_ref}/derived-artifacts",
+        "Artifact editor preprocessing controls"
+      ],
+      "code_paths": [
+        "backend/model_eval_api/artifact_types.py",
+        "backend/model_eval_api/artifacts.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "backend/model_eval_api/main.py",
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts"
+      ],
+      "docs": [
+        "docs/data-model.md",
+        "docs/architecture.md",
+        "docs/v2-implementation-task-list.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "tests/test_artifacts_phase3.py",
+        "tests/test_privacy_repro_phase13.py",
+        "tests/test_v2_demo_phase25.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "data_models": [
+        "Artifact",
+        "ArtifactPreprocessingRun",
+        "model_input_snapshot",
+        "Derived artifact snapshots"
+      ],
+      "related_components": [
+        "COMP-PERSISTENCE",
+        "COMP-BACKEND-API",
+        "COMP-FRONTEND"
+      ],
+      "related_features": [
+        "FEATURE-PRIVACY-AUDIT-SAFETY",
+        "FEATURE-MANIFEST-RUN-GENERATION",
+        "FEATURE-DEMO-READINESS"
+      ],
+      "known_risks": [
+        "PDF/image/OCR behavior depends on local PyMuPDF, Pillow, and optional OCR tooling.",
+        "Artifact paths and local storage URIs require strict redaction discipline across API, UI, exports, traces, and audit logs."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "The artifact pipeline is local-first; cloud/S3 storage remains later architecture, not implemented evidence."
+      ],
+      "evidence": [
+        "docs/data-model.md",
+        "backend/model_eval_api/artifacts.py",
+        "backend/model_eval_api/artifact_types.py",
+        "tests/test_artifacts_phase3.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-BENCHMARK-REPLICATES",
+      "name": "Benchmark suites, dataset splits, and replicates",
+      "category": "experiment-design",
+      "summary": "Versioned benchmark suites lock reusable membership, dataset split filters, suite reruns, reliability replicate metadata, and retry-vs-replicate separation.",
+      "intended_behavior": "Users can rerun locked suites over selected splits, preserve suite membership snapshots, and measure nondeterminism from replicate attempts without counting retry recovery as reliability evidence.",
+      "user_or_system_value": "Turns one-off context-sensitivity experiments into repeatable regression packs with uncertainty-aware interpretation.",
+      "entry_points": [
+        "GET/POST /projects/{project_slug}/library/benchmark-suites",
+        "GET /projects/{project_slug}/library/benchmark-suites/{suite_id}/preview",
+        "evalbench suite run <suite> --split <split> --dry-run --local-only",
+        "Benchmark suites library editor",
+        "Experiment Builder suite selection"
+      ],
+      "code_paths": [
+        "backend/model_eval_api/manifest.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "backend/model_eval_api/headless.py",
+        "backend/model_eval_api/main.py",
+        "cli/model_eval_cli/main.py",
+        "frontend/src/App.tsx",
+        "frontend/src/experimentBuilder.ts"
+      ],
+      "docs": [
+        "docs/v2-implementation-task-list.md",
+        "docs/results-analytics.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "tests/test_benchmark_suites_phase17.py",
+        "tests/test_manifest_contract.py",
+        "tests/test_executor_phase5.py",
+        "tests/test_results_analytics_phase10.py",
+        "tests/test_exports_phase11.py",
+        "frontend/src/experimentBuilder.test.ts",
+        "frontend/src/App.test.tsx"
+      ],
+      "data_models": [
+        "BenchmarkSuite",
+        "BenchmarkSuiteItem",
+        "Run.replicate_group_id",
+        "RunAttempt.attempt_kind",
+        "RunAttempt.replicate_group_id"
+      ],
+      "related_components": [
+        "COMP-PERSISTENCE",
+        "COMP-EXECUTION",
+        "COMP-FRONTEND"
+      ],
+      "related_features": [
+        "FEATURE-MANIFEST-RUN-GENERATION",
+        "FEATURE-RESULTS-ANALYTICS",
+        "FEATURE-DEMO-READINESS"
+      ],
+      "known_risks": [
+        "Suite reruns reuse manifest and execution machinery; regressions in one path can affect both suite and non-suite experiments.",
+        "Small replicate counts can produce visible but low-confidence intervals."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "No scheduling or automated drift rerun feature is implemented; docs keep scheduled drift monitoring out of V2 scope."
+      ],
+      "evidence": [
+        "backend/model_eval_api/persistence/repositories.py",
+        "tests/test_benchmark_suites_phase17.py",
+        "tests/test_results_analytics_phase10.py",
+        "docs/v2-demo.md",
+        "frontend/src/experimentBuilder.test.ts"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-REVIEW-QUEUES-TAXONOMY",
+      "name": "Blind review, reviewer queues, and failure taxonomies",
+      "category": "human-evaluation",
+      "summary": "Blind pairwise review sets, answer randomization, metadata reveal boundaries, reviewer identities, deterministic assignments, assignment decisions, taxonomy-backed failure tags, reviewer progress, and disagreement analytics.",
+      "intended_behavior": "Human reviewers can score output pairs without hidden metadata leakage, submit typed decisions, revise decisions, work through assigned queues, and use versioned failure taxonomy labels.",
+      "user_or_system_value": "Keeps subjective labels auditable and useful as source-of-truth calibration data for judges and analytics.",
+      "entry_points": [
+        "POST /projects/{project_slug}/experiments/{experiment_id}/review-sets",
+        "GET /review-sets/{review_set_id}",
+        "POST /review-sets/{review_set_id}/assignments",
+        "GET /review-sets/{review_set_id}/reviewers/{reviewer_slug}/queue",
+        "POST /review-assignments/{assignment_id}/decision",
+        "POST /review-items/{review_item_id}/decision",
+        "Comparison Workspace"
+      ],
+      "code_paths": [
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/main.py",
+        "backend/model_eval_api/schemas.py",
+        "backend/model_eval_api/results_analytics.py",
+        "backend/model_eval_api/headless.py",
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts"
+      ],
+      "docs": [
+        "docs/architecture.md",
+        "docs/v2-implementation-task-list.md",
+        "docs/copper-memo-demo.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "tests/test_review_phase8.py",
+        "tests/test_review_queues_phase16.py",
+        "tests/test_results_analytics_phase10.py",
+        "tests/test_exports_phase11.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "data_models": [
+        "ReviewSet",
+        "ReviewItem",
+        "Reviewer",
+        "ReviewAssignment",
+        "FailureTaxonomy",
+        "Score"
+      ],
+      "related_components": [
+        "COMP-PERSISTENCE",
+        "COMP-BACKEND-API",
+        "COMP-FRONTEND",
+        "COMP-ANALYTICS"
+      ],
+      "related_features": [
+        "FEATURE-EVALUATORS-JUDGES-METRICS",
+        "FEATURE-RESULTS-ANALYTICS",
+        "FEATURE-HEADLESS-CLI-EXPORTS"
+      ],
+      "known_risks": [
+        "Metadata reveal and export paths must preserve blind review guarantees until explicit reveal.",
+        "Reviewer and taxonomy metadata are embedded in scores and exports, so schema changes need backward-compatible migration planning."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "No multi-user authentication or reviewer authorization boundary is implemented in the current local-first workflow."
+      ],
+      "evidence": [
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/main.py",
+        "tests/test_review_phase8.py",
+        "tests/test_review_queues_phase16.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-EVALUATORS-JUDGES-METRICS",
+      "name": "Deterministic evaluators, LLM judges, and metric adapters",
+      "category": "evaluation",
+      "summary": "Deterministic evaluator engine, versioned LLM judge configs, dry-run/gated live judge execution, calibration and verbosity bias rows, metric adapter config library, local RAG-style metric registry, DeepEval-style mapping, and adapter execution.",
+      "intended_behavior": "Users can apply local deterministic checks, run calibrated judge workflows over stored attempts, and execute compatible local metric adapters while preserving typed scores and evaluator snapshots.",
+      "user_or_system_value": "Adds scalable evaluation signals while keeping human review as the calibration anchor for subjective quality.",
+      "entry_points": [
+        "evalbench score <experiment> --evaluator <id>",
+        "evalbench judge <experiment> --judge <id> --dry-run --local-only",
+        "evalbench metric-adapters <experiment>",
+        "POST /monitor/experiments/{experiment_id}/judges/{evaluator_id}/run",
+        "POST /monitor/experiments/{experiment_id}/metric-adapters/run",
+        "LLM judge config editor",
+        "Metric adapter config editor",
+        "Results judge and metric controls"
+      ],
+      "code_paths": [
+        "backend/model_eval_api/deterministic_evaluators.py",
+        "backend/model_eval_api/llm_judges.py",
+        "backend/model_eval_api/metric_adapters.py",
+        "backend/model_eval_api/metric_adapter_execution.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/results_analytics.py",
+        "cli/model_eval_cli/main.py",
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts"
+      ],
+      "docs": [
+        "docs/results-analytics.md",
+        "docs/headless-workflow.md",
+        "docs/v2-implementation-task-list.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "tests/test_deterministic_evaluators_phase9.py",
+        "tests/test_llm_judges_phase14.py",
+        "tests/test_llm_judge_execution_phase15.py",
+        "tests/test_metric_adapters_phase21.py",
+        "tests/test_results_analytics_phase10.py",
+        "tests/test_exports_phase11.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "data_models": [
+        "Evaluator",
+        "LLMJudgeConfig",
+        "JudgeExecution",
+        "MetricAdapterConfig",
+        "Score"
+      ],
+      "related_components": [
+        "COMP-ANALYTICS",
+        "COMP-PERSISTENCE",
+        "COMP-CLI",
+        "COMP-FRONTEND"
+      ],
+      "related_features": [
+        "FEATURE-REVIEW-QUEUES-TAXONOMY",
+        "FEATURE-RESULTS-ANALYTICS",
+        "FEATURE-PROVIDER-EXECUTOR-QUEUE"
+      ],
+      "known_risks": [
+        "LLM judge outputs can look authoritative even when they are dry-run, uncalibrated, or weakly calibrated against human labels.",
+        "Local deterministic metrics and DeepEval-style fixture mapping may not represent live external SDK behavior."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "No external DeepEval SDK integration is present; current evidence is local deterministic mapping only."
+      ],
+      "evidence": [
+        "backend/model_eval_api/deterministic_evaluators.py",
+        "backend/model_eval_api/llm_judges.py",
+        "backend/model_eval_api/metric_adapters.py",
+        "tests/test_llm_judge_execution_phase15.py",
+        "tests/test_metric_adapters_phase21.py",
+        "docs/results-analytics.md"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-RESULTS-ANALYTICS",
+      "name": "Results analytics, divergence, uncertainty, and frontier",
+      "category": "analytics",
+      "summary": "Aggregates terminal attempts and typed scores into win/pass/failure rates, warmer lift, context sensitivity, divergence/carryover, uncertainty intervals, judge calibration overlays, metric adapter score rows, and cost-quality frontier views.",
+      "intended_behavior": "Results favor count-backed directional summaries, label low-confidence or heuristic metrics, filter consistently across API/UI/export paths, and avoid implying false precision.",
+      "user_or_system_value": "Turns raw experiment records into actionable comparison evidence for model, prompt, warmer, evaluator, reviewer, and cost-quality decisions.",
+      "entry_points": [
+        "GET /monitor/experiments/{experiment_id}/analytics",
+        "Results screen",
+        "evalbench compare",
+        "evalbench export --format markdown|csv|json",
+        "analytics-backed export rows"
+      ],
+      "code_paths": [
+        "backend/model_eval_api/results_analytics.py",
+        "backend/model_eval_api/deterministic_evaluators.py",
+        "backend/model_eval_api/headless.py",
+        "backend/model_eval_api/main.py",
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts"
+      ],
+      "docs": [
+        "docs/results-analytics.md",
+        "docs/product-brief.md",
+        "docs/mvp-roadmap.md",
+        "docs/v2-implementation-task-list.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "tests/test_results_analytics_phase10.py",
+        "tests/test_deterministic_evaluators_phase9.py",
+        "tests/test_exports_phase11.py",
+        "tests/test_llm_judge_execution_phase15.py",
+        "tests/test_metric_adapters_phase21.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "data_models": [
+        "Score",
+        "RunAttempt",
+        "ReviewAssignment",
+        "JudgeExecution",
+        "Analytics response DTOs"
+      ],
+      "related_components": [
+        "COMP-ANALYTICS",
+        "COMP-FRONTEND",
+        "COMP-INTEROP"
+      ],
+      "related_features": [
+        "FEATURE-WARMER-FIRST-PRODUCT-MODEL",
+        "FEATURE-BENCHMARK-REPLICATES",
+        "FEATURE-REVIEW-QUEUES-TAXONOMY",
+        "FEATURE-EVALUATORS-JUDGES-METRICS",
+        "FEATURE-HEADLESS-CLI-EXPORTS"
+      ],
+      "known_risks": [
+        "Heuristic divergence and carryover rows can be mistaken for calibrated semantic judgments if warnings are hidden downstream.",
+        "Quality comparisons require comparable case/split groupings; analytics must keep filtering and grouping rules explicit."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "No production-scale datasets are included to validate performance of analytics over large experiment histories."
+      ],
+      "evidence": [
+        "docs/results-analytics.md",
+        "backend/model_eval_api/results_analytics.py",
+        "tests/test_results_analytics_phase10.py",
+        "frontend/src/App.test.tsx",
+        "tests/test_exports_phase11.py"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-FRONTEND-WORKBENCH",
+      "name": "Frontend workbench",
+      "category": "frontend",
+      "summary": "React/Vite single-page workbench covering Library, Experiment Builder, Run Monitor, Comparison Workspace, Results, artifact preprocessing, suites, judges, metric adapters, Promptfoo import/export, and V2 demo smoke flow.",
+      "intended_behavior": "Users can operate the core local workbench from the browser with typed API calls, client-side manifest building, monitor filters, blind review workflows, and analytics/export controls.",
+      "user_or_system_value": "Makes the backend workflows discoverable and usable without requiring direct CLI use.",
+      "entry_points": [
+        "frontend/src/main.tsx",
+        "make frontend",
+        "npm run dev",
+        "Library screen",
+        "Experiment Builder screen",
+        "Run Monitor screen",
+        "Comparison Workspace",
+        "Results screen"
+      ],
+      "code_paths": [
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts",
+        "frontend/src/experimentBuilder.ts",
+        "frontend/src/styles.css",
+        "frontend/src/main.tsx",
+        "frontend/package.json",
+        "frontend/vite.config.ts"
+      ],
+      "docs": [
+        "docs/mvp-roadmap.md",
+        "docs/copper-memo-demo.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "frontend/src/App.test.tsx",
+        "frontend/src/experimentBuilder.test.ts"
+      ],
+      "data_models": [
+        "TypeScript API DTOs in frontend/src/api.ts",
+        "LibraryState",
+        "ExperimentDraft",
+        "ExperimentManifest",
+        "ExperimentPreview"
+      ],
+      "related_components": [
+        "COMP-FRONTEND",
+        "COMP-BACKEND-API"
+      ],
+      "related_features": [
+        "FEATURE-API-LIBRARY-EXPERIMENTS",
+        "FEATURE-MANIFEST-RUN-GENERATION",
+        "FEATURE-REVIEW-QUEUES-TAXONOMY",
+        "FEATURE-RESULTS-ANALYTICS"
+      ],
+      "known_risks": [
+        "The frontend is concentrated in a large App.tsx file, raising review and conflict risk for future UI changes.",
+        "Manual TypeScript DTO mirroring can drift from backend schema changes."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "No browser screenshot or accessibility audit was run for this feature-model refinement."
+      ],
+      "evidence": [
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts",
+        "frontend/src/experimentBuilder.ts",
+        "frontend/src/App.test.tsx",
+        "frontend/package.json",
+        "docs/mvp-roadmap.md"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-HEADLESS-CLI-EXPORTS",
+      "name": "Headless CLI and stable exports",
+      "category": "cli-export",
+      "summary": "Typer CLI commands and headless services support local-first validation, preview, expansion, run, compare, review queue export, deterministic scoring, judge execution, metric adapters, suite runs, demo generation, and Markdown/CSV/JSON exports.",
+      "intended_behavior": "Users can run reproducible workflows without the UI, with stable export ordering, hidden metadata protection for blind review exports, and local-only defaults for execution commands.",
+      "user_or_system_value": "Provides automation-friendly workflows and durable artifacts for review, reporting, and demo validation.",
+      "entry_points": [
+        "evalbench validate",
+        "evalbench preview",
+        "evalbench expand",
+        "evalbench run",
+        "evalbench compare",
+        "evalbench review",
+        "evalbench score",
+        "evalbench judge",
+        "evalbench metric-adapters",
+        "evalbench suite run",
+        "evalbench export",
+        "evalbench demo copper-memo",
+        "evalbench demo v2"
+      ],
+      "code_paths": [
+        "cli/model_eval_cli/main.py",
+        "cli/model_eval_cli/seed_data.py",
+        "backend/model_eval_api/headless.py",
+        "backend/model_eval_api/copper_seed.py",
+        "backend/model_eval_api/copper_demo.py",
+        "backend/model_eval_api/v2_demo.py",
+        "pyproject.toml"
+      ],
+      "docs": [
+        "README.md",
+        "docs/headless-workflow.md",
+        "docs/copper-memo-demo.md",
+        "docs/v2-demo.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "tests/test_manifest_contract.py",
+        "tests/test_exports_phase11.py",
+        "tests/test_cli_seed.py",
+        "tests/test_copper_demo_phase12.py",
+        "tests/test_v2_demo_phase25.py",
+        "tests/test_promptfoo_interop_phase22.py",
+        "tests/test_metric_adapters_phase21.py"
+      ],
+      "data_models": [
+        "Experiment export payloads",
+        "Score rows",
+        "Review records",
+        "Analytics rows"
+      ],
+      "related_components": [
+        "COMP-CLI",
+        "COMP-INTEROP",
+        "COMP-ANALYTICS"
+      ],
+      "related_features": [
+        "FEATURE-DEMO-READINESS",
+        "FEATURE-INTEROP-PROMPTFOO-OTEL",
+        "FEATURE-PRIVACY-AUDIT-SAFETY"
+      ],
+      "known_risks": [
+        "CLI commands depend on local database URL and PYTHONPATH/package install state; docs include fallback commands for checkout use.",
+        "Export formats are stable contracts and require compatibility care when score or analytics payloads change."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "No export fixture golden files are checked into this feature model; stability is inferred from tests and docs."
+      ],
+      "evidence": [
+        "docs/headless-workflow.md",
+        "cli/model_eval_cli/main.py",
+        "backend/model_eval_api/headless.py",
+        "tests/test_exports_phase11.py",
+        "tests/test_v2_demo_phase25.py"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-INTEROP-PROMPTFOO-OTEL",
+      "name": "Promptfoo and OpenTelemetry interoperability",
+      "category": "interoperability",
+      "summary": "Promptfoo import/export maps compatible prompts, providers, tests, assertions, variables, options, and warnings; OpenTelemetry-compatible JSON export emits redacted metadata spans.",
+      "intended_behavior": "Interop paths preserve raw provider params where possible, warn on unsupported or lossy Promptfoo mappings, and export trace metadata without private prompts, artifacts, warmer text, payloads, outputs, credentials, paths, checksums, or OCR text.",
+      "user_or_system_value": "Lets users move compatible eval configs in and out of the workbench while preserving explicit lossiness and safety boundaries.",
+      "entry_points": [
+        "evalbench import promptfoo <file> --preview-only",
+        "evalbench import promptfoo <file> --persist --project <slug>",
+        "evalbench export <experiment> --format promptfoo",
+        "evalbench export <experiment> --format otel-json",
+        "POST /projects/{project_slug}/imports/promptfoo/preview",
+        "GET /monitor/experiments/{experiment_id}/exports?format=promptfoo",
+        "GET /monitor/experiments/{experiment_id}/exports?format=otel-json"
+      ],
+      "code_paths": [
+        "backend/model_eval_api/promptfoo.py",
+        "backend/model_eval_api/otel_export.py",
+        "backend/model_eval_api/headless.py",
+        "backend/model_eval_api/main.py",
+        "cli/model_eval_cli/main.py",
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts"
+      ],
+      "docs": [
+        "docs/headless-workflow.md",
+        "docs/privacy-repro-safety.md",
+        "docs/v2-implementation-task-list.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "tests/test_promptfoo_interop_phase22.py",
+        "tests/test_exports_phase11.py",
+        "tests/test_privacy_repro_phase13.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "data_models": [
+        "PromptfooImportPreview",
+        "PromptfooExport",
+        "OpenTelemetry span JSON payloads",
+        "AuditLog"
+      ],
+      "related_components": [
+        "COMP-INTEROP",
+        "COMP-CLI",
+        "COMP-FRONTEND"
+      ],
+      "related_features": [
+        "FEATURE-MANIFEST-RUN-GENERATION",
+        "FEATURE-HEADLESS-CLI-EXPORTS",
+        "FEATURE-PRIVACY-AUDIT-SAFETY"
+      ],
+      "known_risks": [
+        "Promptfoo schemas and provider formats can change externally; mapping logic needs compatibility review before relying on current behavior.",
+        "Trace export must remain allow-list based because it crosses many sensitive domain objects."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "No live Promptfoo CLI or external OTel collector compatibility check was performed."
+      ],
+      "evidence": [
+        "backend/model_eval_api/promptfoo.py",
+        "backend/model_eval_api/otel_export.py",
+        "docs/headless-workflow.md",
+        "docs/privacy-repro-safety.md",
+        "tests/test_promptfoo_interop_phase22.py",
+        "tests/test_exports_phase11.py"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-PRIVACY-AUDIT-SAFETY",
+      "name": "Privacy, reproducibility, and audit safety",
+      "category": "safety",
+      "summary": "Local-only defaults, provider allow/deny policy, context-budget reports, data egress labels, fail-on-over-budget behavior, provider secret handling, metadata-only audit logs, payload redaction, and safe trace/export boundaries.",
+      "intended_behavior": "The system blocks unsafe outbound execution before provider calls, keeps provider credentials in environment variables, snapshots reproducibility metadata, and avoids leaking raw prompts, private artifacts, manifests, warmer text, request/response payloads, outputs, local paths, checksums, OCR text, or credentials into audit and trace metadata.",
+      "user_or_system_value": "Allows local experimentation with sensitive prompts/artifacts while keeping egress explicit and reproducibility evidence available.",
+      "entry_points": [
+        "MODEL_EVAL_LOCAL_ONLY=true",
+        "GET/PUT /projects/{project_slug}/provider-policy",
+        "ExecutionControls.from_snapshot",
+        "build_experiment_trace",
+        "evalbench export --format otel-json"
+      ],
+      "code_paths": [
+        "backend/model_eval_api/executor.py",
+        "backend/model_eval_api/providers/settings.py",
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "backend/model_eval_api/main.py",
+        "backend/model_eval_api/headless.py",
+        "backend/model_eval_api/otel_export.py"
+      ],
+      "docs": [
+        "docs/privacy-repro-safety.md",
+        "docs/architecture.md",
+        "docs/headless-workflow.md",
+        "docs/data-model.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "tests/test_privacy_repro_phase13.py",
+        "tests/test_provider_adapters_phase4.py",
+        "tests/test_executor_phase5.py",
+        "tests/test_exports_phase11.py",
+        "tests/test_artifacts_phase3.py"
+      ],
+      "data_models": [
+        "Project.provider_allow_list",
+        "Project.provider_deny_list",
+        "Run.data_egress_label",
+        "Run.context_report",
+        "Run.truncation_policy",
+        "RunAttempt.request_payload",
+        "RunAttempt.response_payload",
+        "AuditLog"
+      ],
+      "related_components": [
+        "COMP-EXECUTION",
+        "COMP-PERSISTENCE",
+        "COMP-INTEROP"
+      ],
+      "related_features": [
+        "FEATURE-PROVIDER-EXECUTOR-QUEUE",
+        "FEATURE-ARTIFACT-PREPROCESSING",
+        "FEATURE-INTEROP-PROMPTFOO-OTEL"
+      ],
+      "known_risks": [
+        "Live provider calls depend on environment credentials and explicit policy changes; accidental relaxation would increase egress risk.",
+        "Audit and trace redaction must stay synchronized with new model fields and export rows."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "Encrypted in-app provider key storage is documented as deferred and is not implemented.",
+        "No formal threat model artifact was generated during this feature-model update."
+      ],
+      "evidence": [
+        "docs/privacy-repro-safety.md",
+        "backend/model_eval_api/executor.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "backend/model_eval_api/otel_export.py",
+        "tests/test_privacy_repro_phase13.py"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "FEATURE-DEMO-READINESS",
+      "name": "Copper memo demos and V2 readiness audit",
+      "category": "demo-readiness",
+      "summary": "Local-only synthetic copper memo workflows seed structured library records, build full experiments or benchmark suites, synthesize attempts/reviews/judge/metric data, compute analytics, and write demo exports without provider calls.",
+      "intended_behavior": "Developers can run MVP and V2 demo commands repeatedly, inspect outputs in the UI, and use generated reports as local artifacts while keeping generated export files out of git.",
+      "user_or_system_value": "Provides an end-to-end proof path for onboarding, smoke testing, and explaining the context-sensitivity workflow.",
+      "entry_points": [
+        "python -m model_eval_cli.main seed copper-memo --format json",
+        "python -m model_eval_cli.main demo copper-memo --export-dir <path>",
+        "python -m model_eval_cli.main demo v2 --export-dir <path>",
+        "evalbench demo copper-memo",
+        "evalbench demo v2",
+        "examples/copper_memo_context_sensitivity.yaml",
+        "examples/v2_copper_benchmark_suite.yaml"
+      ],
+      "code_paths": [
+        "backend/model_eval_api/copper_seed.py",
+        "backend/model_eval_api/copper_demo.py",
+        "backend/model_eval_api/v2_demo.py",
+        "cli/model_eval_cli/seed_data.py",
+        "cli/model_eval_cli/main.py",
+        "examples/copper_memo_context_sensitivity.yaml",
+        "examples/v2_copper_benchmark_suite.yaml",
+        "tests/fixtures/v2_demo_copper_context.txt",
+        "tests/fixtures/v2_demo_copper_chart.svg"
+      ],
+      "docs": [
+        "docs/copper-memo-demo.md",
+        "docs/v2-demo.md",
+        "docs/product-brief.md",
+        "docs/v2-implementation-task-list.md",
+        "FEATURE_INVENTORY.md"
+      ],
+      "tests": [
+        "tests/test_cli_seed.py",
+        "tests/test_copper_demo_phase12.py",
+        "tests/test_v2_demo_phase25.py",
+        "tests/test_manifest_contract.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "data_models": [
+        "Project",
+        "BenchmarkSuite",
+        "ArtifactPreprocessingRun",
+        "RunAttempt",
+        "ReviewSet",
+        "ReviewAssignment",
+        "JudgeExecution",
+        "MetricAdapterConfig",
+        "Score"
+      ],
+      "related_components": [
+        "COMP-CLI",
+        "COMP-FRONTEND",
+        "COMP-ANALYTICS"
+      ],
+      "related_features": [
+        "FEATURE-HEADLESS-CLI-EXPORTS",
+        "FEATURE-BENCHMARK-REPLICATES",
+        "FEATURE-ARTIFACT-PREPROCESSING",
+        "FEATURE-RESULTS-ANALYTICS"
+      ],
+      "known_risks": [
+        "Synthetic demo signals are useful for smoke coverage but should not be treated as real provider quality evidence.",
+        "Generated export directories should remain uncommitted unless a future task explicitly asks for checked-in sample output."
+      ],
+      "doc_code_mismatches": [],
+      "unknowns": [
+        "No demo command was executed during this feature-model refinement; counts are evidence from docs and tests."
+      ],
+      "evidence": [
+        "docs/copper-memo-demo.md",
+        "docs/v2-demo.md",
+        "backend/model_eval_api/v2_demo.py",
+        "tests/test_v2_demo_phase25.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "unknowns": [
+    "Live OpenAI, Anthropic, Promptfoo CLI, Redis worker, Docker Compose services, browser smoke, and external OpenTelemetry collector behavior require separate environment-level validation.",
+    "V3 backlog items remain intentionally out of scope: production trace ingestion, active sampling, synthetic case generation, team administration, evaluator CI gates, prompt deployment, model release comparison, custom providers, local model hosting, and scheduled drift monitoring."
+  ],
+  "evidence": [
+    {
+      "claim": "Product wedge and data model are warmer-first context-sensitivity experiments with immutable snapshots.",
+      "files": [
+        "docs/product-brief.md",
+        "docs/adr/0001-warmers-as-first-class-entities.md",
+        "docs/data-model.md",
+        "README.md"
+      ],
+      "notes": "Docs define warmers as structured/versioned variables and separate Case, Experiment, Run, and RunAttempt."
+    },
+    {
+      "claim": "Implemented feature inventory is organized through V2 Phase 25 and maps MVP/V2 work to reviewable slices.",
+      "files": [
+        "FEATURE_INVENTORY.md",
+        "docs/v2-demo.md",
+        "docs/v2-implementation-task-list.md"
+      ],
+      "notes": "Used as the highest-level map, then cross-checked against code paths and tests."
+    },
+    {
+      "claim": "Backend API includes manifests, project libraries, experiments, monitor, review, analytics, judge, metric, artifact, Promptfoo, and export routes.",
+      "files": [
+        "backend/model_eval_api/main.py",
+        "backend/model_eval_api/schemas.py",
+        "tests/test_library_builder_phase6.py",
+        "tests/test_results_analytics_phase10.py"
+      ],
+      "notes": "Route decorators and API tests show the exposed service boundary."
+    },
+    {
+      "claim": "Persistence includes SQLAlchemy models, snapshots, repositories, and Alembic migrations for core and V2 entities.",
+      "files": [
+        "backend/model_eval_api/persistence/models.py",
+        "backend/model_eval_api/persistence/repositories.py",
+        "backend/model_eval_api/persistence/snapshots.py",
+        "alembic/versions",
+        "tests/test_persistence_phase2.py"
+      ],
+      "notes": "ORM classes and tests cover library versioning, experiments, runs, attempts, scores, reviews, judges, metric adapters, suites, artifacts, and audit records."
+    },
+    {
+      "claim": "Execution is local-first and provider-gated with dry-run, cache, retry, cancellation, cost, context, and policy controls.",
+      "files": [
+        "backend/model_eval_api/executor.py",
+        "backend/model_eval_api/providers",
+        "backend/model_eval_api/queue.py",
+        "docs/privacy-repro-safety.md",
+        "tests/test_executor_phase5.py",
+        "tests/test_provider_adapters_phase4.py"
+      ],
+      "notes": "Execution and provider tests cover dry-run/local-only behavior, policy blocks, retries, cache hits, and response normalization."
+    },
+    {
+      "claim": "Frontend is a React/Vite workbench with typed API helpers, local manifest builder, monitor, comparison, results, artifact, judge, metric, suite, Promptfoo, and demo coverage.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/api.ts",
+        "frontend/src/experimentBuilder.ts",
+        "frontend/src/App.test.tsx",
+        "frontend/src/experimentBuilder.test.ts",
+        "frontend/package.json"
+      ],
+      "notes": "Frontend tests enumerate user-facing workflows and API interactions."
+    },
+    {
+      "claim": "Analytics combine human review, deterministic evaluators, judges, metric adapters, divergence/carryover, uncertainty, and frontier outputs.",
+      "files": [
+        "backend/model_eval_api/results_analytics.py",
+        "backend/model_eval_api/deterministic_evaluators.py",
+        "backend/model_eval_api/llm_judges.py",
+        "backend/model_eval_api/metric_adapters.py",
+        "docs/results-analytics.md",
+        "tests/test_results_analytics_phase10.py"
+      ],
+      "notes": "Docs and tests emphasize count-backed rates, warning labels, and calibration boundaries."
+    },
+    {
+      "claim": "Headless workflows and exports are first-class local automation paths.",
+      "files": [
+        "cli/model_eval_cli/main.py",
+        "backend/model_eval_api/headless.py",
+        "docs/headless-workflow.md",
+        "tests/test_exports_phase11.py"
+      ],
+      "notes": "CLI command definitions and export tests cover validation, run, compare, review, scoring, judges, metric adapters, suite runs, demos, and export formats."
+    },
+    {
+      "claim": "Interop exists for Promptfoo and metadata-only OpenTelemetry JSON export, with explicit warning/redaction boundaries.",
+      "files": [
+        "backend/model_eval_api/promptfoo.py",
+        "backend/model_eval_api/otel_export.py",
+        "docs/headless-workflow.md",
+        "docs/privacy-repro-safety.md",
+        "tests/test_promptfoo_interop_phase22.py",
+        "tests/test_exports_phase11.py"
+      ],
+      "notes": "Import/export mapping tests and trace export tests support the interoperability feature."
+    },
+    {
+      "claim": "V2 demo is a local-only synthetic proof path that exercises benchmark suites, preprocessing, replicated attempts, review queues, judges, metric adapters, analytics, and exports.",
+      "files": [
+        "backend/model_eval_api/v2_demo.py",
+        "docs/v2-demo.md",
+        "tests/test_v2_demo_phase25.py",
+        "frontend/src/App.test.tsx"
+      ],
+      "notes": "Docs and tests state expected local-only counts and out-of-scope V3 items."
+    }
+  ]
+}
