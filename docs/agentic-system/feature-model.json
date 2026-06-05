@@ -21,9 +21,7 @@
       "cd frontend && npm run build",
       "python -m model_eval_cli.main preview examples/copper_memo_context_sensitivity.yaml"
     ],
-    "ci_files": [
-      ".github/workflows/ci.yml"
-    ]
+    "ci_files": []
   },
   "codebase_summary": "Model Eval is a local-first workbench for testing how prior conversation context changes model behavior on the same final task. The implementation spans a FastAPI backend, SQLAlchemy/Alembic persistence, provider execution and safety gates, Typer CLI workflows, React/Vite frontend, analytics/evaluator services, Promptfoo/OpenTelemetry interoperability, and synthetic copper demos. The main product shape is warmer-first context-sensitivity analysis with immutable experiment snapshots, logical runs separated from concrete run attempts, blind review, judge/metric evaluation, and reproducible exports.",
   "architecture": {
@@ -199,14 +197,13 @@
         ]
       },
       {
-        "id": "COMP-TESTS-CI",
-        "name": "Tests and CI",
-        "description": "Phase-oriented backend tests, frontend Vitest coverage, example manifest preview, Python lint/compile checks, frontend build, and GitHub Actions CI.",
+        "id": "COMP-TESTS-LOCAL-VERIFICATION",
+        "name": "Tests and local verification",
+        "description": "Phase-oriented backend tests, frontend Vitest coverage, example manifest preview, Python lint/compile checks, and frontend build.",
         "paths": [
           "tests",
           "frontend/src/App.test.tsx",
           "frontend/src/experimentBuilder.test.ts",
-          ".github/workflows/ci.yml",
           "Makefile"
         ],
         "entry_points": [
@@ -249,10 +246,10 @@
   "features": [
     {
       "id": "FEATURE-DEV-FOUNDATION",
-      "name": "Development foundation and CI",
+      "name": "Development foundation and verification",
       "category": "internal-platform",
-      "summary": "Local bootstrap, packaging, service startup, lint/test/build commands, Docker Compose services, and CI workflow.",
-      "intended_behavior": "A developer can install Python and frontend dependencies, start API/frontend/worker services, run manifest preview, and rely on CI for compile, lint, Python tests, frontend install, and frontend build.",
+      "summary": "Local bootstrap, packaging, service startup, lint/test/build commands, and host services.",
+      "intended_behavior": "A developer can install Python and frontend dependencies, start API/frontend/worker services, run manifest preview, and run local compile, lint, Python test, frontend install, and frontend build checks.",
       "user_or_system_value": "Keeps repository setup repeatable and gives reviewers executable evidence for future changes.",
       "entry_points": [
         "make install",
@@ -262,16 +259,13 @@
         "make api",
         "make worker",
         "make frontend",
-        "make preview-example",
-        "docker compose up -d postgres redis",
-        ".github/workflows/ci.yml"
+        "make preview-example"
       ],
       "code_paths": [
         "Makefile",
         "pyproject.toml",
-        "docker-compose.yml",
+        ".gitignore",
         ".env.example",
-        ".github/workflows/ci.yml",
         "frontend/package.json",
         "frontend/vite.config.ts",
         "frontend/tsconfig.json"
@@ -281,30 +275,31 @@
         "FEATURE_INVENTORY.md"
       ],
       "tests": [
-        ".github/workflows/ci.yml",
+        "tests/test_repository_hygiene.py",
         "tests/test_manifest_contract.py",
         "frontend/src/App.test.tsx",
         "frontend/src/experimentBuilder.test.ts"
       ],
       "data_models": [],
       "related_components": [
-        "COMP-TESTS-CI"
+        "COMP-TESTS-LOCAL-VERIFICATION"
       ],
       "related_features": [],
       "known_risks": [
-        "CI does not exercise Docker Compose services or an interactive browser smoke path.",
-        "Branch protection requirements may include checks outside the checked-in workflow."
+        "Local checks do not exercise host Postgres/Redis services or an interactive browser smoke path.",
+        "Branch protection requirements may include remote checks outside the local release gate."
       ],
       "doc_code_mismatches": [],
       "unknowns": [
-        "Whether branch protection requires additional checks beyond the checked-in GitHub Actions workflow."
+        "Whether branch protection requires additional remote checks outside this repository."
       ],
       "evidence": [
         "README.md",
         "Makefile",
         "pyproject.toml",
+        ".gitignore",
         "frontend/package.json",
-        ".github/workflows/ci.yml",
+        "tests/test_repository_hygiene.py",
         "FEATURE_INVENTORY.md"
       ],
       "confidence": "high"
@@ -1446,7 +1441,7 @@
     }
   ],
   "unknowns": [
-    "Live OpenAI, Anthropic, Promptfoo CLI, Redis worker, Docker Compose services, browser smoke, and external OpenTelemetry collector behavior require separate environment-level validation.",
+    "Live OpenAI, Anthropic, Promptfoo CLI, Redis worker, host Postgres/Redis services, browser smoke, and external OpenTelemetry collector behavior require separate environment-level validation.",
     "V3 backlog items remain intentionally out of scope: production trace ingestion, active sampling, synthetic case generation, team administration, evaluator CI gates, prompt deployment, model release comparison, custom providers, local model hosting, and scheduled drift monitoring."
   ],
   "evidence": [

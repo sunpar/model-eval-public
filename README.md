@@ -79,17 +79,16 @@ Provider keys stay in local environment variables only; they are not stored in t
 Keep `MODEL_EVAL_LOCAL_ONLY=true` unless you are intentionally testing provider execution
 with mocked or explicitly configured clients.
 
-Postgres and Redis:
+Database and queue services:
 
-```bash
-docker compose up -d postgres redis
-```
+The copied `.env` uses `sqlite+pysqlite:///./model_eval.sqlite3`, which is enough for
+local demos, CLI previews, API development, and tests. To run against Postgres, install
+and start Postgres on your host machine, then set `MODEL_EVAL_DATABASE_URL` or
+`DATABASE_URL` to a SQLAlchemy Postgres URL such as
+`postgresql+psycopg://model_eval:model_eval@localhost:5432/model_eval`.
 
-The compose file starts Postgres on `localhost:5432` with database/user/password `model_eval`, and Redis on `localhost:6379`. These match the local URLs in `.env.example`. Stop them with:
-
-```bash
-docker compose down
-```
+Asynchronous worker jobs use Redis through `REDIS_URL`. Install and start Redis on your
+host machine before running `make worker`; the default URL is `redis://localhost:6379/0`.
 
 Install:
 

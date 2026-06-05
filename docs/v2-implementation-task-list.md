@@ -465,4 +465,4 @@ Latest release-readiness verification recorded on 2026-05-26 for
 - [x] `PYTHONPATH=backend MODEL_EVAL_DATABASE_URL=sqlite+pysqlite:////tmp/model-eval-docs-alembic.sqlite3 uv run alembic upgrade head`
 - [x] `PYTHONPATH=backend:cli MODEL_EVAL_DATABASE_URL=sqlite+pysqlite:////tmp/model-eval-v2-demo-docs-readiness.sqlite3 uv run --extra dev python -m model_eval_cli.main demo v2 --export-dir /tmp/model-eval-v2-demo-docs-readiness`
 - [ ] Browser smoke test after material UI changes. Not run for this docs-only branch.
-- [ ] Docker Compose smoke check when Postgres, Redis, API, worker, or setup docs change. Not run for this docs-only branch.
+- [ ] Host-service smoke check when Postgres, Redis, API, worker, or setup docs change. Not run for this docs-only branch.

@@ -9,7 +9,7 @@ V2 implementation slices are tracked in F36-F48. V3 backlog notes in `docs/imple
 
 ## F01 - Repository Foundation And Developer Workflow
 
-Description: Local development, dependency, CI, and service bootstrap conventions for the backend, CLI, frontend, Postgres, and Redis.
+Description: Local development, dependency, verification, and service bootstrap conventions for the backend, CLI, frontend, Postgres, and Redis.
 
 Files involved:
 
@@ -18,8 +18,7 @@ Files involved:
 - `.gitignore`
 - `Makefile`
 - `pyproject.toml`
-- `docker-compose.yml`
-- `.github/workflows/ci.yml`
+- `tests/test_repository_hygiene.py`
 - `backend/model_eval_api/__init__.py`
 - `backend/model_eval_api/persistence/__init__.py`
 - `cli/model_eval_cli/__init__.py`
@@ -28,7 +27,7 @@ Files involved:
 - `frontend/tsconfig.json`
 - `frontend/vite.config.ts`
 
-Architecture chosen: Python packaging exposes `evalbench` from the backend/CLI source roots, Makefile targets wrap common checks and local servers, Docker Compose provides local Postgres and Redis, and GitHub Actions runs separate Python and frontend jobs.
+Architecture chosen: Python packaging exposes `evalbench` from the backend/CLI source roots, Makefile targets wrap common checks and local servers, and SQLite is the local default with host-installed Postgres and Redis available for service checks.
 
 ## F02 - Product Scope, Architecture, And Handoff Docs
 
@@ -116,7 +115,7 @@ Files involved:
 - `tests/test_persistence_phase2.py`
 - `tests/test_privacy_repro_phase13.py`
 
-Architecture chosen: The ORM is the canonical schema and Alembic captures incremental table/column changes. Tests use isolated SQLite sessions while local development can use Postgres from Compose.
+Architecture chosen: The ORM is the canonical schema and Alembic captures incremental table/column changes. Tests use isolated SQLite sessions while local development can use host-installed Postgres.
 
 ## F08 - Versioned Library Object Persistence
 
@@ -246,7 +245,6 @@ Files involved:
 - `backend/model_eval_api/deterministic_evaluators.py`
 - `Makefile`
 - `pyproject.toml`
-- `docker-compose.yml`
 - `tests/test_executor_phase5.py`
 
 Architecture chosen: RQ is a thin asynchronous boundary over the synchronous executor services. Jobs open their own database session and return small metadata payloads, keeping the core execution logic testable without Redis.

@@ -1,5 +1,5 @@
 id,feature_id,title,branch,risk
-SLICE-001,FEATURE-DEV-FOUNDATION,Review Development foundation and CI,codebase-review/SLICE-001-review-development-foundation-and-ci,medium
+SLICE-001,FEATURE-DEV-FOUNDATION,Review Development foundation and verification,codebase-review/SLICE-001-review-development-foundation-and-verification,medium
 SLICE-002,FEATURE-WARMER-FIRST-PRODUCT-MODEL,Review Warmer-first product and data model,codebase-review/SLICE-002-review-warmer-first-product-and-data-model,medium
 SLICE-003,FEATURE-MANIFEST-RUN-GENERATION,Review Manifest contract and run generation,codebase-review/SLICE-003-review-manifest-contract-and-run-generation,medium
 SLICE-004,FEATURE-PERSISTENCE-SNAPSHOTS,"Review Persistence, migrations, and immutable snapshots",codebase-review/SLICE-004-review-persistence-migrations-and-immutable-snapshots,medium

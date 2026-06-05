@@ -29,7 +29,7 @@ git status --short --branch
 | Artifact preprocessing | `artifacts.py`, `artifact_types.py`, persistence models/snapshots, tests/fixtures, docs/privacy-repro-safety.md, docs/v2-demo.md | Artifact tests, export redaction tests |
 | Demo behavior | `copper_demo.py`, `v2_demo.py`, examples, test fixtures, docs/copper-memo-demo.md, docs/v2-demo.md, runbooks | Demo command smoke and related tests |
 | Dependencies | `pyproject.toml`, `uv.lock`, `frontend/package.json`, `frontend/package-lock.json`, docs if setup changes | Fresh install or lockfile-sensitive verification |
-| CI or release gates | `.github/workflows/ci.yml`, README, runbooks, implementation checklists | Local equivalent of changed CI jobs |
+| Release gates | README, runbooks, implementation checklists | Local equivalent of changed release checks |
 
 ## Docs To Revisit
 
@@ -148,4 +148,4 @@ Update runbooks when any of these change:
 - CLI command names, options, output formats, or safe defaults.
 - UI navigation paths or screen responsibilities.
 - Demo commands, expected counts, generated files, or smoke paths.
-- Verification commands, CI expectations, migration commands, or generated-file policy.
+- Verification commands, release-gate expectations, migration commands, or generated-file policy.

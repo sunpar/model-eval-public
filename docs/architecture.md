@@ -7,7 +7,7 @@ Backend:
 - FastAPI API for libraries, experiment manifests, run orchestration, reviews, and exports.
 - Pydantic schemas at the boundary.
 - SQLAlchemy models for durable experiment records.
-- SQLite by default for local demos/tests, with Postgres supported through Docker Compose for local service smoke checks.
+- SQLite by default for local demos/tests, with host-installed Postgres supported for local service smoke checks.
 - Redis plus an RQ worker queue for provider calls and scoring jobs when asynchronous execution is enabled.
 - Local filesystem artifact storage first, with S3-compatible storage later.
 

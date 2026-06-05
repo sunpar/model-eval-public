@@ -20,9 +20,9 @@ Tasks:
 - [x] Add the copper memo context-sensitivity example manifest.
 - [x] Add `.env.example` with placeholders for provider keys, database URL, Redis URL, artifact storage root, and local-only mode.
 - [x] Add a `Makefile` or `justfile` for common commands: install, lint, test, build, api, worker, frontend, and preview-example.
-- [x] Add README setup notes for Postgres and Redis using `docker-compose.yml`.
+- [x] Add README setup notes for SQLite defaults plus host-installed Postgres and Redis.
 - [x] Add a short architecture decision record explaining why warmers are first-class entities rather than prompt text.
-- [x] Add CI with Python compile/lint/tests and frontend build.
+- [x] Add local verification with Python compile/lint/tests and frontend build.
 - [x] Add seed data command for the copper memo demo objects.
 
 ## Phase 1: Manifest Contract And Run Generation
@@ -379,4 +379,4 @@ Latest release-readiness verification recorded on 2026-05-26 for
 - [x] `PYTHONPATH=backend MODEL_EVAL_DATABASE_URL=sqlite+pysqlite:////tmp/model-eval-docs-alembic.sqlite3 uv run alembic upgrade head`
 - [x] `PYTHONPATH=backend:cli MODEL_EVAL_DATABASE_URL=sqlite+pysqlite:////tmp/model-eval-v2-demo-docs-readiness.sqlite3 uv run --extra dev python -m model_eval_cli.main demo v2 --export-dir /tmp/model-eval-v2-demo-docs-readiness`
 - [ ] Browser smoke test for the frontend after material UI changes. Not run for this docs-only branch.
-- [ ] Docker Compose smoke check for Postgres, Redis, API, and worker. Not run for this docs-only branch.
+- [ ] Host-service smoke check for Postgres, Redis, API, and worker. Not run for this docs-only branch.

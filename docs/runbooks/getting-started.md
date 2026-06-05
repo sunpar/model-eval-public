@@ -7,7 +7,6 @@ local-only and does not require provider keys.
 
 - Python 3.11 or newer.
 - Node.js and npm for the frontend.
-- Docker Desktop or compatible Docker runtime if you want Postgres and Redis.
 - `uv` is optional but useful for reproducible Python commands with `uv.lock`.
 
 ## 1. Prepare Local Environment
@@ -20,17 +19,13 @@ Leave `MODEL_EVAL_LOCAL_ONLY=true` in place for normal development and demo work
 `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` blank unless you are deliberately testing live
 provider execution.
 
-If you need Postgres and Redis instead of a temporary SQLite database:
+The copied environment uses SQLite at `./model_eval.sqlite3`, which is enough for a
+local demo checkout. For Postgres smoke checks, install and start Postgres on your host
+machine, create the target database/user with your preferred local tooling, and set
+`MODEL_EVAL_DATABASE_URL` or `DATABASE_URL` to the resulting SQLAlchemy URL.
 
-```bash
-docker compose up -d postgres redis
-```
-
-Stop them when finished:
-
-```bash
-docker compose down
-```
+Worker jobs require a local Redis service. Install and start Redis on your host machine,
+then set `REDIS_URL` if it is not available at `redis://localhost:6379/0`.
 
 ## 2. Install Dependencies
 
