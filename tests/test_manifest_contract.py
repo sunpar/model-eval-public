@@ -2,10 +2,12 @@ import json
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+import pytest
 from typer.testing import CliRunner
 
 from model_eval_api.main import app as api_app
 from model_eval_api.manifest import (
+    ManifestValidationError,
     expand_manifest,
     load_manifest_file,
     parse_manifest,
@@ -15,6 +17,24 @@ from model_eval_cli.main import app as cli_app
 
 
 EXAMPLE_MANIFEST = Path("examples/copper_memo_context_sensitivity.yaml")
+
+
+def _assert_load_manifest_error_startswith(manifest_path: Path, expected_prefix: str) -> None:
+    with pytest.raises(ManifestValidationError) as error:
+        load_manifest_file(manifest_path)
+
+    assert len(error.value.errors) == 1
+    assert error.value.errors[0].startswith(expected_prefix)
+
+
+def _assert_cli_validate_failure(manifest_path: Path, expected_stderr: str) -> None:
+    result = CliRunner().invoke(cli_app, ["validate", str(manifest_path)])
+
+    assert result.exit_code == 1
+    assert "valid: false" in result.stdout
+    assert expected_stderr in result.stderr
+    assert all(line.startswith("- ") for line in result.stderr.splitlines())
+    assert result.exception is None or isinstance(result.exception, SystemExit)
 
 
 def test_copper_memo_manifest_expands_to_expected_counts() -> None:
@@ -364,6 +384,34 @@ def test_cli_validate_and_expand_json() -> None:
     assert payload["logical_runs"] == 16
     assert payload["run_attempts"] == 32
     assert len(payload["runs"]) == 16
+
+
+def test_load_manifest_file_reports_malformed_yaml(tmp_path: Path) -> None:
+    manifest_path = tmp_path / "broken.yaml"
+    manifest_path.write_text("name: [unterminated\n", encoding="utf-8")
+
+    _assert_load_manifest_error_startswith(manifest_path, "Manifest file could not be parsed:")
+    _assert_cli_validate_failure(manifest_path, "- Manifest file could not be parsed:")
+
+
+def test_cli_validate_reports_missing_manifest_path(tmp_path: Path) -> None:
+    missing_path = tmp_path / "missing.yaml"
+
+    _assert_cli_validate_failure(missing_path, f"- Manifest file not found: {missing_path}")
+
+
+def test_cli_validate_reports_invalid_manifest_encoding(tmp_path: Path) -> None:
+    manifest_path = tmp_path / "invalid-encoding.yaml"
+    manifest_path.write_bytes(b"name: \xff\n")
+
+    _assert_load_manifest_error_startswith(
+        manifest_path,
+        f"Manifest file could not be read: {manifest_path}:",
+    )
+    _assert_cli_validate_failure(
+        manifest_path,
+        f"- Manifest file could not be read: {manifest_path}:",
+    )
 
 
 def test_api_validate_and_preview_routes_accept_manifest_body() -> None:

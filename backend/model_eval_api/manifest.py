@@ -268,8 +268,19 @@ def _normalize_id_objects(value: Any) -> Any:
 
 
 def load_manifest_file(path: Path) -> ExperimentManifest:
-    with path.open("r", encoding="utf-8") as file:
-        loaded = yaml.safe_load(file) or {}
+    try:
+        with path.open("r", encoding="utf-8") as file:
+            loaded = yaml.safe_load(file) or {}
+    except FileNotFoundError as error:
+        raise ManifestValidationError([f"Manifest file not found: {path}"]) from error
+    except OSError as error:
+        detail = error.strerror or str(error)
+        raise ManifestValidationError([f"Manifest file could not be read: {path}: {detail}"]) from error
+    except UnicodeError as error:
+        raise ManifestValidationError([f"Manifest file could not be read: {path}: {error}"]) from error
+    except yaml.YAMLError as error:
+        detail = " ".join(str(error).split())
+        raise ManifestValidationError([f"Manifest file could not be parsed: {detail}"]) from error
     if not isinstance(loaded, dict):
         raise ManifestValidationError(["Manifest root must be a YAML mapping."])
     return parse_manifest(loaded)
