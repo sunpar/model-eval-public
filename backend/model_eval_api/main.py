@@ -966,6 +966,7 @@ def run_experiment_metric_adapters(
     request: MetricAdapterRunCreate,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
+    _require_experiment(session, experiment_id)
     try:
         payload = run_metric_adapters_for_experiment(
             session,

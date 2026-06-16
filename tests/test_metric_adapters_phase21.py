@@ -609,6 +609,29 @@ def test_metric_adapter_execution_dry_run_local_only_and_api_surface(
     assert recorded.json()["scores_recorded"] == 1
 
 
+def test_metric_adapter_api_returns_404_for_missing_experiment(client: TestClient) -> None:
+    response = client.post("/monitor/experiments/999/metric-adapters/run", json={})
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Experiment 999 does not exist."
+
+
+def test_metric_adapter_api_preserves_422_for_invalid_adapter_filters(
+    client: TestClient, session
+) -> None:
+    project = _project(session, slug="adapter_filter_validation")
+    attempt = _run_attempt(session, project)
+    session.commit()
+
+    response = client.post(
+        f"/monitor/experiments/{attempt.run.experiment_id}/metric-adapters/run",
+        json={"adapter_config_version": 1},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "adapter_config_version requires adapter_config_slug."
+
+
 def test_metric_adapter_execution_uses_registry_required_inputs_for_local_adapters(
     session,
 ) -> None:
