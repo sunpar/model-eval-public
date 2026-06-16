@@ -411,8 +411,17 @@ def _case_records(
             "unsupported_test_field",
         )
         variables = dict(default_vars)
-        if isinstance(item.get("vars"), dict):
-            variables.update(item["vars"])
+        if "vars" in item:
+            if isinstance(item["vars"], dict):
+                variables.update(item["vars"])
+            else:
+                warnings.append(
+                    _warning(
+                        "unsupported_test_vars",
+                        f"{path}.vars",
+                        "Promptfoo test vars must be a mapping.",
+                    )
+                )
         description = str(item.get("description") or f"promptfoo_case_{index + 1}")
         case_id = _unique_slug(
             _slugify(description, f"promptfoo_case_{index + 1}"),
@@ -575,7 +584,19 @@ def _default_test(value: Any, warnings: list[dict[str, str]]) -> dict[str, Any]:
                     "Promptfoo defaultTest options must be a mapping.",
                 )
             )
-    return {"vars": dict(value.get("vars")) if isinstance(value.get("vars"), dict) else {}}
+    if "vars" not in value:
+        return {"vars": {}}
+    vars_value = value["vars"]
+    if not isinstance(vars_value, dict):
+        warnings.append(
+            _warning(
+                "unsupported_default_test_vars",
+                "$.defaultTest.vars",
+                "Promptfoo defaultTest vars must be a mapping.",
+            )
+        )
+        return {"vars": {}}
+    return {"vars": dict(vars_value)}
 
 
 def _controls(
