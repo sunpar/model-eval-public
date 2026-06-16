@@ -417,8 +417,10 @@ def _case_records(
                     item["vars"],
                     warnings,
                     path=f"{path}.vars",
-                    warning_code="unsupported_test_vars",
-                    message="Promptfoo test vars must be a mapping.",
+                    invalid_warning_code="unsupported_test_vars",
+                    source_warning_code="unsupported_test_vars_source",
+                    invalid_message="Promptfoo test vars must be a mapping or file path source.",
+                    source_message="Promptfoo test vars file sources are not loaded.",
                 )
             )
         description = str(item.get("description") or f"promptfoo_case_{index + 1}")
@@ -590,8 +592,10 @@ def _default_test(value: Any, warnings: list[dict[str, str]]) -> dict[str, Any]:
             value["vars"],
             warnings,
             path="$.defaultTest.vars",
-            warning_code="unsupported_default_test_vars",
-            message="Promptfoo defaultTest vars must be a mapping.",
+            invalid_warning_code="unsupported_default_test_vars",
+            source_warning_code="unsupported_default_test_vars_source",
+            invalid_message="Promptfoo defaultTest vars must be a mapping or file path source.",
+            source_message="Promptfoo defaultTest vars file sources are not loaded.",
         )
     }
 
@@ -841,13 +845,24 @@ def _vars_mapping_or_warning(
     warnings: list[dict[str, str]],
     *,
     path: str,
-    warning_code: str,
-    message: str,
+    invalid_warning_code: str,
+    source_warning_code: str,
+    invalid_message: str,
+    source_message: str,
 ) -> dict[str, Any]:
     if isinstance(value, dict):
         return dict(value)
-    warnings.append(_warning(warning_code, path, message))
+    if _is_vars_file_source(value):
+        warnings.append(_warning(source_warning_code, path, source_message))
+        return {}
+    warnings.append(_warning(invalid_warning_code, path, invalid_message))
     return {}
+
+
+def _is_vars_file_source(value: Any) -> bool:
+    return isinstance(value, str) or (
+        isinstance(value, list) and all(isinstance(item, str) for item in value)
+    )
 
 
 def _normalized_assertion_type(value: Any) -> str:
