@@ -161,6 +161,10 @@ PYTHONPATH=backend:cli uv run python -m model_eval_cli.main export <experiment-i
 PYTHONPATH=backend:cli uv run python -m model_eval_cli.main export <experiment-id-or-slug> --format otel-json
 ```
 
+Analytics sections in Markdown/CSV/JSON exports can be narrowed with `--case`, `--suite`,
+`--suite-split`, `--model-config`, `--system-prompt`, `--warmer`, `--evaluator-source`, and
+`--reviewer`. The `--*-slug` and `--reviewer-id` aliases are also accepted.
+
 `otel-json` is metadata-only. It excludes raw prompts, manifests, artifacts, warmer messages,
 request and response payloads, credentials, model outputs, terminal failure details, score
 values, filenames, checksums, local paths, OCR text, and screenshot-derived private metadata.

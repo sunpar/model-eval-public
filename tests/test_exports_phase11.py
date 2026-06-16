@@ -744,8 +744,50 @@ evaluation:
     cli_module.database._session_factory = None
 
 
+@pytest.mark.parametrize(
+    "filter_options",
+    [
+        [
+            "--case",
+            "case",
+            "--suite",
+            "suite_alpha",
+            "--split",
+            "dev",
+            "--model-config",
+            "model_a",
+            "--system-prompt",
+            "system",
+            "--warmer",
+            "none",
+            "--evaluator-source",
+            "human",
+            "--reviewer",
+            "reviewer",
+        ],
+        [
+            "--case-slug",
+            "case",
+            "--suite-slug",
+            "suite_alpha",
+            "--suite-split",
+            "dev",
+            "--model-config-slug",
+            "model_a",
+            "--system-prompt-slug",
+            "system",
+            "--warmer-slug",
+            "none",
+            "--evaluator-source",
+            "human",
+            "--reviewer-id",
+            "reviewer",
+        ],
+    ],
+    ids=["short-aliases", "slug-aliases"],
+)
 def test_cli_export_forwards_analytics_filters_to_headless_export(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
+    monkeypatch: pytest.MonkeyPatch, tmp_path, filter_options: list[str]
 ) -> None:
     database_path = tmp_path / "cli-filter.sqlite3"
     monkeypatch.setenv("MODEL_EVAL_DATABASE_URL", f"sqlite+pysqlite:///{database_path}")
@@ -767,22 +809,7 @@ def test_cli_export_forwards_analytics_filters_to_headless_export(
                 experiment_id,
                 "--format",
                 "json",
-                "--case-slug",
-                "case",
-                "--suite-slug",
-                "suite_alpha",
-                "--suite-split",
-                "dev",
-                "--model-config-slug",
-                "model_a",
-                "--system-prompt-slug",
-                "system",
-                "--warmer-slug",
-                "none",
-                "--evaluator-source",
-                "human",
-                "--reviewer-id",
-                "reviewer",
+                *filter_options,
             ],
         )
 

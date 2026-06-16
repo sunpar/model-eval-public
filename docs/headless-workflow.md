@@ -12,7 +12,7 @@ Commands:
 - `evalbench demo v2 --export-dir <path>` builds the complete local-only V2 copper demo, including benchmark suite setup, preprocessing records, synthetic execution, blind review, judge calibration rows, analytics, and Markdown/CSV/JSON exports.
 - `evalbench import promptfoo <file> --preview-only` converts a Promptfoo YAML/JSON config into a Model Eval manifest preview without executing providers or requiring provider keys.
 - `evalbench import promptfoo <file> --persist --project <slug>` also writes mapped cases, system prompts, providers, deterministic evaluators, metric adapter configs, and the default `none` warmer as new project-scoped library versions.
-- `evalbench export <experiment> --format markdown|csv|json|promptfoo|otel-json` emits reproducible experiment exports.
+- `evalbench export <experiment> --format markdown|csv|json|promptfoo|otel-json` emits reproducible experiment exports. Analytics sections can be filtered with `--case`, `--suite`, `--suite-split`, `--model-config`, `--system-prompt`, `--warmer`, `--evaluator-source`, and `--reviewer`.
 
 Exports use stable ordering. JSON includes manifest, library snapshots, run snapshots, request and response payloads, scores, review records, and aggregate analytics. CSV uses one stable header across run, attempt, score, review, and aggregate rows. Markdown is a readable summary with configs, scores, costs, failure tags, and key examples.
 

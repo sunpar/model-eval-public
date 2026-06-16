@@ -361,20 +361,24 @@ def export_command(
 ) -> None:
     """Export an experiment for review, sharing, or outside analysis."""
 
+    analytics_filters = {
+        "case_slug": case_slug,
+        "suite_slug": suite_slug,
+        "suite_split": suite_split,
+        "model_config_slug": model_config_slug,
+        "system_prompt_slug": system_prompt_slug,
+        "warmer_slug": warmer_slug,
+        "evaluator_source": evaluator_source,
+        "reviewer_id": reviewer_id,
+    }
+
     try:
         payload = _with_session(
             lambda session: headless.export_experiment(
                 session,
                 experiment,
                 output_format,
-                case_slug=case_slug,
-                suite_slug=suite_slug,
-                suite_split=suite_split,
-                model_config_slug=model_config_slug,
-                system_prompt_slug=system_prompt_slug,
-                warmer_slug=warmer_slug,
-                evaluator_source=evaluator_source,
-                reviewer_id=reviewer_id,
+                **analytics_filters,
             )
         )
     except ValueError as error:
