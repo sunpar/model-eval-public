@@ -494,6 +494,106 @@ def test_json_schema_evaluator_preserves_invalid_json_failure_for_wrapped_output
     assert "Output is not valid JSON" in (score.explanation or "")
 
 
+def test_json_schema_evaluator_extracts_embedded_array_before_inner_object(
+    session: Session,
+) -> None:
+    experiment = _json_schema_experiment(
+        session,
+        schema={
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["rating", "passed"],
+                "properties": {
+                    "rating": {"type": "integer"},
+                    "passed": {"type": "boolean"},
+                },
+            },
+        },
+    )
+    attempt = _first_attempt(session, experiment)
+    attempt.status = "succeeded"
+    attempt.response_payload = {"text": 'Here: [{"rating": 4, "passed": true}]'}
+    session.commit()
+
+    run_deterministic_evaluators(session, experiment_id=experiment.id)
+    session.commit()
+
+    assert _score(_scores(session), "json_schema").value == {
+        "passed": True,
+        "errors": [],
+        "evaluator_id": "schema",
+    }
+
+
+def test_json_schema_evaluator_searches_past_prose_braces_for_inline_json(
+    session: Session,
+) -> None:
+    experiment = _json_schema_experiment(
+        session,
+        schema={
+            "type": "object",
+            "required": ["rating", "passed"],
+            "properties": {
+                "rating": {"type": "integer"},
+                "passed": {"type": "boolean"},
+            },
+        },
+    )
+    attempt = _first_attempt(session, experiment)
+    attempt.status = "succeeded"
+    attempt.response_payload = {
+        "text": 'Use {rating, passed}. Result: {"rating": 5, "passed": true}'
+    }
+    session.commit()
+
+    run_deterministic_evaluators(session, experiment_id=experiment.id)
+    session.commit()
+
+    assert _score(_scores(session), "json_schema").value == {
+        "passed": True,
+        "errors": [],
+        "evaluator_id": "schema",
+    }
+
+
+def test_json_schema_evaluator_continues_after_schema_invalid_candidates(
+    session: Session,
+) -> None:
+    experiment = _json_schema_experiment(
+        session,
+        schema={
+            "type": "object",
+            "required": ["rating"],
+            "properties": {"rating": {"type": "integer"}},
+        },
+    )
+    attempt = _first_attempt(session, experiment)
+    attempt.status = "succeeded"
+    attempt.response_payload = {
+        "text": (
+            "Template:\n"
+            "```json\n"
+            '{"rating": "integer"}\n'
+            "```\n"
+            "Answer:\n"
+            "```json\n"
+            '{"rating": 5}\n'
+            "```"
+        )
+    }
+    session.commit()
+
+    run_deterministic_evaluators(session, experiment_id=experiment.id)
+    session.commit()
+
+    assert _score(_scores(session), "json_schema").value == {
+        "passed": True,
+        "errors": [],
+        "evaluator_id": "schema",
+    }
+
+
 def test_json_schema_integer_accepts_integral_float(session: Session) -> None:
     experiment = _json_schema_experiment(
         session,
