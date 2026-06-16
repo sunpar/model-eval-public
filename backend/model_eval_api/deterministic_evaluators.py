@@ -228,7 +228,7 @@ class JsonSchemaEvaluator:
         text = _attempt_output_text(attempt).strip()
         schema = definition.get("schema") if isinstance(definition.get("schema"), dict) else {}
         try:
-            parsed = json.loads(text)
+            parsed = _parse_json_output(text)
         except json.JSONDecodeError as error:
             return DeterministicScore(
                 type="pass_fail",
@@ -247,6 +247,38 @@ class JsonSchemaEvaluator:
             else f"Output failed JSON schema validation: {'; '.join(errors)}.",
             confidence=1.0,
         )
+
+
+def _parse_json_output(text: str) -> Any:
+    decode_error: json.JSONDecodeError | None = None
+    for candidate in _json_output_candidates(text):
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError as error:
+            decode_error = error
+    if decode_error is None:
+        raise json.JSONDecodeError("Expecting value", text, 0)
+    raise decode_error
+
+
+def _json_output_candidates(text: str) -> list[str]:
+    candidates = [text]
+    stripped = text.strip()
+    if stripped.startswith("```"):
+        lines = stripped.splitlines()
+        if len(lines) >= 3 and lines[-1].strip() == "```":
+            candidates.append("\n".join(lines[1:-1]).strip())
+    for start_char, end_char in (("{", "}"), ("[", "]")):
+        start = text.find(start_char)
+        end = text.rfind(end_char)
+        if start != -1 and end > start:
+            candidates.append(text[start : end + 1])
+
+    unique_candidates: list[str] = []
+    for candidate in candidates:
+        if candidate and candidate not in unique_candidates:
+            unique_candidates.append(candidate)
+    return unique_candidates
 
 
 class CitationRequiredEvaluator:

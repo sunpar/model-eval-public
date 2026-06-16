@@ -398,6 +398,49 @@ def test_json_schema_evaluator_and_citation_placeholder_persist_typed_scores(
     assert placeholder.confidence == 0.0
 
 
+def test_json_schema_evaluator_extracts_wrapped_json_object(session: Session) -> None:
+    experiment = _experiment(
+        session,
+        evaluators=[
+            {
+                "id": "schema",
+                "type": "deterministic",
+                "definition": {
+                    "kind": "json_schema",
+                    "schema": {
+                        "type": "object",
+                        "required": ["rating", "passed"],
+                        "properties": {
+                            "rating": {"type": "integer"},
+                            "passed": {"type": "boolean"},
+                        },
+                    },
+                },
+            }
+        ],
+    )
+    attempt = _first_attempt(session, experiment)
+    attempt.status = "succeeded"
+    attempt.response_payload = {
+        "text": (
+            "Here is the structured result:\n"
+            "```json\n"
+            '{"rating": 4, "passed": true}\n'
+            "```"
+        )
+    }
+    session.commit()
+
+    run_deterministic_evaluators(session, experiment_id=experiment.id)
+    session.commit()
+
+    assert _score(_scores(session), "json_schema").value == {
+        "passed": True,
+        "errors": [],
+        "evaluator_id": "schema",
+    }
+
+
 def test_json_schema_integer_accepts_integral_float(session: Session) -> None:
     experiment = _experiment(
         session,
