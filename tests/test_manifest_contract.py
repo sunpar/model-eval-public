@@ -2,10 +2,12 @@ import json
 from pathlib import Path
 
 from fastapi.testclient import TestClient
+import pytest
 from typer.testing import CliRunner
 
 from model_eval_api.main import app as api_app
 from model_eval_api.manifest import (
+    ManifestValidationError,
     expand_manifest,
     load_manifest_file,
     parse_manifest,
@@ -364,6 +366,28 @@ def test_cli_validate_and_expand_json() -> None:
     assert payload["logical_runs"] == 16
     assert payload["run_attempts"] == 32
     assert len(payload["runs"]) == 16
+
+
+def test_load_manifest_file_reports_malformed_yaml(tmp_path: Path) -> None:
+    manifest_path = tmp_path / "broken.yaml"
+    manifest_path.write_text("name: [unterminated\n", encoding="utf-8")
+
+    with pytest.raises(ManifestValidationError) as error:
+        load_manifest_file(manifest_path)
+
+    assert len(error.value.errors) == 1
+    assert error.value.errors[0].startswith("Manifest file could not be parsed:")
+
+
+def test_cli_validate_reports_missing_manifest_path(tmp_path: Path) -> None:
+    missing_path = tmp_path / "missing.yaml"
+
+    result = CliRunner().invoke(cli_app, ["validate", str(missing_path)])
+
+    assert result.exit_code == 1
+    assert "valid: false" in result.stdout
+    assert f"Manifest file not found: {missing_path}" in result.stderr
+    assert result.exception is None or isinstance(result.exception, SystemExit)
 
 
 def test_api_validate_and_preview_routes_accept_manifest_body() -> None:
