@@ -263,11 +263,7 @@ def _parse_json_output(text: str) -> Any:
 
 def _json_output_candidates(text: str) -> list[str]:
     candidates = [text]
-    stripped = text.strip()
-    if stripped.startswith("```"):
-        lines = stripped.splitlines()
-        if len(lines) >= 3 and lines[-1].strip() == "```":
-            candidates.append("\n".join(lines[1:-1]).strip())
+    candidates.extend(_fenced_code_block_candidates(text))
     for start_char, end_char in (("{", "}"), ("[", "]")):
         start = text.find(start_char)
         end = text.rfind(end_char)
@@ -279,6 +275,15 @@ def _json_output_candidates(text: str) -> list[str]:
         if candidate and candidate not in unique_candidates:
             unique_candidates.append(candidate)
     return unique_candidates
+
+
+def _fenced_code_block_candidates(text: str) -> list[str]:
+    candidates: list[str] = []
+    for match in re.finditer(r"```[^\r\n]*[\r\n](.*?)```", text, flags=re.DOTALL):
+        candidate = match.group(1).strip()
+        if candidate:
+            candidates.append(candidate)
+    return candidates
 
 
 class CitationRequiredEvaluator:
