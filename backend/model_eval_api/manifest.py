@@ -276,6 +276,8 @@ def load_manifest_file(path: Path) -> ExperimentManifest:
     except OSError as error:
         detail = error.strerror or str(error)
         raise ManifestValidationError([f"Manifest file could not be read: {path}: {detail}"]) from error
+    except UnicodeError as error:
+        raise ManifestValidationError([f"Manifest file could not be read: {path}: {error}"]) from error
     except yaml.YAMLError as error:
         raise ManifestValidationError([f"Manifest file could not be parsed: {error}"]) from error
     if not isinstance(loaded, dict):
