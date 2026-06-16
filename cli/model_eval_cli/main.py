@@ -311,12 +311,49 @@ def export_command(
         "--format",
         help="Output format: markdown, csv, json, promptfoo, or otel-json.",
     ),
+    case_slug: str | None = typer.Option(None, "--case", help="Filter analytics by case slug."),
+    suite_slug: str | None = typer.Option(None, "--suite", help="Filter analytics by suite slug."),
+    suite_split: str | None = typer.Option(
+        None,
+        "--suite-split",
+        "--split",
+        help="Filter analytics by suite split.",
+    ),
+    model_config_slug: str | None = typer.Option(
+        None,
+        "--model-config",
+        help="Filter analytics by model config slug.",
+    ),
+    system_prompt_slug: str | None = typer.Option(
+        None,
+        "--system-prompt",
+        help="Filter analytics by system prompt slug.",
+    ),
+    warmer_slug: str | None = typer.Option(None, "--warmer", help="Filter analytics by warmer slug."),
+    evaluator_source: str | None = typer.Option(
+        None,
+        "--evaluator-source",
+        help="Filter analytics by evaluator source.",
+    ),
+    reviewer_id: str | None = typer.Option(None, "--reviewer", help="Filter analytics by reviewer id."),
 ) -> None:
     """Export an experiment for review, sharing, or outside analysis."""
 
     try:
         payload = _with_session(
-            lambda session: headless.export_experiment(session, experiment, output_format)
+            lambda session: headless.export_experiment(
+                session,
+                experiment,
+                output_format,
+                case_slug=case_slug,
+                suite_slug=suite_slug,
+                suite_split=suite_split,
+                model_config_slug=model_config_slug,
+                system_prompt_slug=system_prompt_slug,
+                warmer_slug=warmer_slug,
+                evaluator_source=evaluator_source,
+                reviewer_id=reviewer_id,
+            )
         )
     except ValueError as error:
         typer.echo(str(error), err=True)

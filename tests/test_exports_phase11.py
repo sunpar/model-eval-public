@@ -744,6 +744,63 @@ evaluation:
     cli_module.database._session_factory = None
 
 
+def test_cli_export_forwards_analytics_filters_to_headless_export(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    database_path = tmp_path / "cli-filter.sqlite3"
+    monkeypatch.setenv("MODEL_EVAL_DATABASE_URL", f"sqlite+pysqlite:///{database_path}")
+    cli_module.database._engine = None
+    cli_module.database._session_factory = None
+    runner = CliRunner()
+
+    cli_module.headless.ensure_database_schema()
+    with cli_module.database.get_session_factory()() as db:
+        experiment = _completed_experiment(db, slug="cli_filter_export")
+        _record_human_scores(db, experiment)
+        experiment_id = str(experiment.id)
+
+    export_result = runner.invoke(
+        cli_module.app,
+        [
+            "export",
+            experiment_id,
+            "--format",
+            "json",
+            "--case",
+            "case",
+            "--suite",
+            "suite_alpha",
+            "--suite-split",
+            "dev",
+            "--model-config",
+            "model_a",
+            "--system-prompt",
+            "system",
+            "--warmer",
+            "none",
+            "--evaluator-source",
+            "human",
+            "--reviewer",
+            "reviewer",
+        ],
+    )
+
+    assert export_result.exit_code == 0
+    export_payload = json.loads(export_result.stdout)
+    assert export_payload["analytics"]["filters"] == {
+        "case_slug": "case",
+        "suite_slug": "suite_alpha",
+        "suite_split": "dev",
+        "model_config_slug": "model_a",
+        "system_prompt_slug": "system",
+        "warmer_slug": "none",
+        "evaluator_source": "human",
+        "reviewer_id": "reviewer",
+    }
+    cli_module.database._engine = None
+    cli_module.database._session_factory = None
+
+
 def test_cli_compare_review_and_score_use_local_database(
     monkeypatch: pytest.MonkeyPatch, tmp_path
 ) -> None:
