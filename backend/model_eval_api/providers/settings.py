@@ -6,11 +6,15 @@ from model_eval_api.providers.errors import ProviderBlockedError
 from model_eval_api.providers.models import ProviderExecutionConfig, ProviderRequest
 
 
-TRUE_ENV_VALUES = {"1", "true", "yes", "on"}
-FALSE_ENV_VALUES = {"0", "false", "no", "off"}
-ENV_BOOL_VALUES = {
-    **dict.fromkeys(TRUE_ENV_VALUES, True),
-    **dict.fromkeys(FALSE_ENV_VALUES, False),
+_ENV_BOOL_VALUES = {
+    "1": True,
+    "true": True,
+    "yes": True,
+    "on": True,
+    "0": False,
+    "false": False,
+    "no": False,
+    "off": False,
 }
 
 
@@ -43,7 +47,7 @@ def _env_bool(name: str, *, default: bool) -> bool:
     value = os.getenv(name)
     if value is None:
         return default
-    return ENV_BOOL_VALUES.get(value.strip().lower(), default)
+    return _ENV_BOOL_VALUES.get(value.strip().lower(), default)
 
 
 def _csv_env(name: str) -> tuple[str, ...] | None:
