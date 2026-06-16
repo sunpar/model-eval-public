@@ -8,6 +8,10 @@ from model_eval_api.providers.models import ProviderExecutionConfig, ProviderReq
 
 TRUE_ENV_VALUES = {"1", "true", "yes", "on"}
 FALSE_ENV_VALUES = {"0", "false", "no", "off"}
+ENV_BOOL_VALUES = {
+    **dict.fromkeys(TRUE_ENV_VALUES, True),
+    **dict.fromkeys(FALSE_ENV_VALUES, False),
+}
 
 
 def provider_config_from_env() -> ProviderExecutionConfig:
@@ -37,14 +41,9 @@ def enforce_provider_config(
 
 def _env_bool(name: str, *, default: bool) -> bool:
     value = os.getenv(name)
-    if value is None or not value.strip():
+    if value is None:
         return default
-    normalized = value.strip().lower()
-    if normalized in TRUE_ENV_VALUES:
-        return True
-    if normalized in FALSE_ENV_VALUES:
-        return False
-    return default
+    return ENV_BOOL_VALUES.get(value.strip().lower(), default)
 
 
 def _csv_env(name: str) -> tuple[str, ...] | None:

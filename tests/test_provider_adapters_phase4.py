@@ -291,16 +291,18 @@ def test_anthropic_maps_file_artifact_inputs_to_content_blocks(tmp_path) -> None
     }
 
 
-def test_blank_local_only_env_fails_closed(monkeypatch) -> None:
-    monkeypatch.setenv("MODEL_EVAL_LOCAL_ONLY", "")
+def test_blank_and_unrecognized_local_only_env_fails_closed(monkeypatch) -> None:
+    for value in ("", "maybe"):
+        monkeypatch.setenv("MODEL_EVAL_LOCAL_ONLY", value)
 
-    assert provider_config_from_env().local_only is True
+        assert provider_config_from_env().local_only is True
 
 
-def test_unrecognized_local_only_env_fails_closed(monkeypatch) -> None:
-    monkeypatch.setenv("MODEL_EVAL_LOCAL_ONLY", "maybe")
+def test_explicit_local_only_env_tokens_are_honored(monkeypatch) -> None:
+    for value in ("1", "true", "yes", "on"):
+        monkeypatch.setenv("MODEL_EVAL_LOCAL_ONLY", value)
 
-    assert provider_config_from_env().local_only is True
+        assert provider_config_from_env().local_only is True
 
     for value in ("0", "false", "no", "off"):
         monkeypatch.setenv("MODEL_EVAL_LOCAL_ONLY", value)
