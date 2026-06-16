@@ -33,6 +33,7 @@ def _assert_cli_validate_failure(manifest_path: Path, expected_stderr: str) -> N
     assert result.exit_code == 1
     assert "valid: false" in result.stdout
     assert expected_stderr in result.stderr
+    assert all(line.startswith("- ") for line in result.stderr.splitlines())
     assert result.exception is None or isinstance(result.exception, SystemExit)
 
 
@@ -390,6 +391,7 @@ def test_load_manifest_file_reports_malformed_yaml(tmp_path: Path) -> None:
     manifest_path.write_text("name: [unterminated\n", encoding="utf-8")
 
     _assert_load_manifest_error_startswith(manifest_path, "Manifest file could not be parsed:")
+    _assert_cli_validate_failure(manifest_path, "- Manifest file could not be parsed:")
 
 
 def test_cli_validate_reports_missing_manifest_path(tmp_path: Path) -> None:

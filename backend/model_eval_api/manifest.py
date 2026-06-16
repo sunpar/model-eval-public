@@ -279,7 +279,8 @@ def load_manifest_file(path: Path) -> ExperimentManifest:
     except UnicodeError as error:
         raise ManifestValidationError([f"Manifest file could not be read: {path}: {error}"]) from error
     except yaml.YAMLError as error:
-        raise ManifestValidationError([f"Manifest file could not be parsed: {error}"]) from error
+        detail = " ".join(str(error).split())
+        raise ManifestValidationError([f"Manifest file could not be parsed: {detail}"]) from error
     if not isinstance(loaded, dict):
         raise ManifestValidationError(["Manifest root must be a YAML mapping."])
     return parse_manifest(loaded)
