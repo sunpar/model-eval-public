@@ -311,8 +311,18 @@ def export_command(
         "--format",
         help="Output format: markdown, csv, json, promptfoo, or otel-json.",
     ),
-    case_slug: str | None = typer.Option(None, "--case", help="Filter analytics by case slug."),
-    suite_slug: str | None = typer.Option(None, "--suite", help="Filter analytics by suite slug."),
+    case_slug: str | None = typer.Option(
+        None,
+        "--case",
+        "--case-slug",
+        help="Filter analytics by case slug.",
+    ),
+    suite_slug: str | None = typer.Option(
+        None,
+        "--suite",
+        "--suite-slug",
+        help="Filter analytics by suite slug.",
+    ),
     suite_split: str | None = typer.Option(
         None,
         "--suite-split",
@@ -322,20 +332,32 @@ def export_command(
     model_config_slug: str | None = typer.Option(
         None,
         "--model-config",
+        "--model-config-slug",
         help="Filter analytics by model config slug.",
     ),
     system_prompt_slug: str | None = typer.Option(
         None,
         "--system-prompt",
+        "--system-prompt-slug",
         help="Filter analytics by system prompt slug.",
     ),
-    warmer_slug: str | None = typer.Option(None, "--warmer", help="Filter analytics by warmer slug."),
+    warmer_slug: str | None = typer.Option(
+        None,
+        "--warmer",
+        "--warmer-slug",
+        help="Filter analytics by warmer slug.",
+    ),
     evaluator_source: str | None = typer.Option(
         None,
         "--evaluator-source",
         help="Filter analytics by evaluator source.",
     ),
-    reviewer_id: str | None = typer.Option(None, "--reviewer", help="Filter analytics by reviewer id."),
+    reviewer_id: str | None = typer.Option(
+        None,
+        "--reviewer",
+        "--reviewer-id",
+        help="Filter analytics by reviewer id.",
+    ),
 ) -> None:
     """Export an experiment for review, sharing, or outside analysis."""
 
