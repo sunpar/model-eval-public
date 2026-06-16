@@ -297,6 +297,17 @@ def test_blank_local_only_env_fails_closed(monkeypatch) -> None:
     assert provider_config_from_env().local_only is True
 
 
+def test_unrecognized_local_only_env_fails_closed(monkeypatch) -> None:
+    monkeypatch.setenv("MODEL_EVAL_LOCAL_ONLY", "maybe")
+
+    assert provider_config_from_env().local_only is True
+
+    for value in ("0", "false", "no", "off"):
+        monkeypatch.setenv("MODEL_EVAL_LOCAL_ONLY", value)
+
+        assert provider_config_from_env().local_only is False
+
+
 def test_dry_run_execution_uses_no_client_and_local_only_blocks_live_calls() -> None:
     adapter = OpenAIAdapter()
     request = adapter.build_request(_run_snapshot("openai", {}))

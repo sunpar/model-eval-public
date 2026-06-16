@@ -6,6 +6,10 @@ from model_eval_api.providers.errors import ProviderBlockedError
 from model_eval_api.providers.models import ProviderExecutionConfig, ProviderRequest
 
 
+TRUE_ENV_VALUES = {"1", "true", "yes", "on"}
+FALSE_ENV_VALUES = {"0", "false", "no", "off"}
+
+
 def provider_config_from_env() -> ProviderExecutionConfig:
     return ProviderExecutionConfig(
         local_only=_env_bool("MODEL_EVAL_LOCAL_ONLY", default=True),
@@ -35,7 +39,12 @@ def _env_bool(name: str, *, default: bool) -> bool:
     value = os.getenv(name)
     if value is None or not value.strip():
         return default
-    return value.strip().lower() in {"1", "true", "yes", "on"}
+    normalized = value.strip().lower()
+    if normalized in TRUE_ENV_VALUES:
+        return True
+    if normalized in FALSE_ENV_VALUES:
+        return False
+    return default
 
 
 def _csv_env(name: str) -> tuple[str, ...] | None:
