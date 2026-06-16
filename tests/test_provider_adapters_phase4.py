@@ -171,6 +171,33 @@ def test_openai_maps_file_artifact_inputs_to_content_parts(tmp_path) -> None:
     }
 
 
+def test_openai_embeds_loopback_file_uri_artifact_inputs(tmp_path) -> None:
+    file_path = tmp_path / "memo.txt"
+    file_path.write_text("memo file", encoding="utf-8")
+    loopback_uri = "file://127.0.0.1" + file_path.as_uri().removeprefix("file://")
+    snapshot = _run_snapshot("openai", {})
+    snapshot["model_input_snapshot"]["artifact_inputs"] = [
+        {
+            "id": "memo",
+            "filename": "memo.txt",
+            "input_mode": "direct_file",
+            "storage_uri": loopback_uri,
+            "mime_type": "text/plain",
+        }
+    ]
+
+    request = OpenAIAdapter().build_request(snapshot)
+
+    assert request.payload["input"][-1]["content"] == [
+        {
+            "type": "input_file",
+            "filename": "memo.txt",
+            "file_data": "data:text/plain;base64,"
+            + base64.b64encode(b"memo file").decode("ascii"),
+        }
+    ]
+
+
 def test_anthropic_adapter_builds_payload_with_system_and_chat_messages() -> None:
     adapter = AnthropicAdapter()
 
