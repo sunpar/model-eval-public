@@ -228,7 +228,7 @@ class JsonSchemaEvaluator:
         text = _attempt_output_text(attempt).strip()
         schema = definition.get("schema") if isinstance(definition.get("schema"), dict) else {}
         try:
-            parsed = json.loads(text)
+            errors = _json_schema_errors_for_output(text, schema)
         except json.JSONDecodeError as error:
             return DeterministicScore(
                 type="pass_fail",
@@ -237,7 +237,6 @@ class JsonSchemaEvaluator:
                 explanation=f"Output is not valid JSON: {error.msg}.",
                 confidence=1.0,
             )
-        errors = _schema_errors(parsed, schema, path="$")
         return DeterministicScore(
             type="pass_fail",
             criterion=criterion,
@@ -247,6 +246,62 @@ class JsonSchemaEvaluator:
             else f"Output failed JSON schema validation: {'; '.join(errors)}.",
             confidence=1.0,
         )
+
+
+def _json_schema_errors_for_output(text: str, schema: dict[str, Any]) -> list[str]:
+    decode_error: json.JSONDecodeError | None = None
+    schema_errors: list[str] | None = None
+    for candidate in _json_output_candidates(text):
+        try:
+            parsed = json.loads(candidate)
+        except json.JSONDecodeError as error:
+            decode_error = error
+            continue
+        errors = _schema_errors(parsed, schema, path="$")
+        if not errors:
+            return []
+        if schema_errors is None:
+            schema_errors = errors
+    if schema_errors is not None:
+        return schema_errors
+    if decode_error is None:
+        raise json.JSONDecodeError("Expecting value", text, 0)
+    raise decode_error
+
+
+def _json_output_candidates(text: str) -> list[str]:
+    candidates = [text]
+    candidates.extend(_fenced_code_block_candidates(text))
+    candidates.extend(_embedded_json_candidates(text))
+
+    unique_candidates: list[str] = []
+    for candidate in candidates:
+        if candidate and candidate not in unique_candidates:
+            unique_candidates.append(candidate)
+    return unique_candidates
+
+
+def _embedded_json_candidates(text: str) -> list[str]:
+    decoder = json.JSONDecoder()
+    candidates: list[str] = []
+    for index, character in enumerate(text):
+        if character not in "{[":
+            continue
+        try:
+            _, end = decoder.raw_decode(text[index:])
+        except json.JSONDecodeError:
+            continue
+        candidates.append(text[index : index + end])
+    return candidates
+
+
+def _fenced_code_block_candidates(text: str) -> list[str]:
+    candidates: list[str] = []
+    for match in re.finditer(r"```[^\r\n]*[\r\n](.*?)```", text, flags=re.DOTALL):
+        candidate = match.group(1).strip()
+        if candidate:
+            candidates.append(candidate)
+    return candidates
 
 
 class CitationRequiredEvaluator:
