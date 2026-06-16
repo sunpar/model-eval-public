@@ -422,6 +422,19 @@ def test_promptfoo_cli_emits_manifest_preview_without_provider_execution(
     assert "execution" not in payload
 
 
+def test_promptfoo_cli_rejects_malformed_yaml_with_single_line_error(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "broken-promptfoo.yaml"
+    config_path.write_text(":\n  - broken", encoding="utf-8")
+
+    result = CliRunner().invoke(cli_module.app, ["import", "promptfoo", str(config_path)])
+
+    assert result.exit_code == 1
+    assert "could not be parsed" in result.stderr
+    assert len(result.stderr.splitlines()) == 1
+
+
 def test_promptfoo_cli_persist_writes_library_records(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -654,6 +667,7 @@ def test_promptfoo_api_import_preview_rejects_malformed_yaml(client: TestClient)
 
     assert response.status_code == 422
     assert "could not be parsed" in response.json()["detail"]
+    assert "\n" not in response.json()["detail"]
 
 
 def _promptfoo_config(tmp_path: Path) -> Path:

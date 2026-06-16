@@ -71,7 +71,8 @@ def _load_promptfoo_payload(content: str) -> dict[str, Any]:
     try:
         loaded = yaml.safe_load(content) or {}
     except yaml.YAMLError as error:
-        raise ValueError(f"Promptfoo config could not be parsed: {error}") from error
+        detail = " ".join(str(error).split())
+        raise ValueError(f"Promptfoo config could not be parsed: {detail}") from error
     if not isinstance(loaded, dict):
         raise ValueError("Promptfoo config root must be a YAML or JSON mapping.")
     return loaded
