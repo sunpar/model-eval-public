@@ -9,7 +9,7 @@ def attempt_output_text(attempt: RunAttempt) -> str:
     payload = attempt.response_payload or {}
     for key in ("output_text", "text", "content"):
         value = payload.get(key)
-        if isinstance(value, str):
+        if isinstance(value, str) and value.strip():
             return value
     output_text = _openai_output_text(payload)
     if output_text:

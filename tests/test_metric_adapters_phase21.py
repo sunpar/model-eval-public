@@ -498,6 +498,55 @@ def test_metric_adapter_execution_records_scores_and_explicit_skips(session) -> 
     assert len(session.scalars(select(Score).where(Score.evaluator_type == "metric_adapter")).all()) == 2
 
 
+def test_metric_adapter_execution_falls_back_to_nested_output_when_direct_text_is_blank(
+    session,
+) -> None:
+    project = _project(session, slug="nested_metric_output")
+    create_metric_adapter_config(
+        session,
+        project=project,
+        slug="retrieval_precision_local",
+        name="Retrieval Precision Local",
+        adapter_kind="retrieval_precision",
+        adapter_version="local-1",
+        required_inputs=["answer_text", "retrieved_chunks"],
+        output_schema={"type": "object"},
+    )
+    attempt = _run_attempt(
+        session,
+        project,
+        response_payload={
+            "output_text": "  ",
+            "output": [
+                {
+                    "content": [
+                        {
+                            "type": "output_text",
+                            "text": "Copper demand rose on grid spend.",
+                        }
+                    ]
+                }
+            ],
+            "retrieved_chunks": [{"chunk_text": "Copper demand rose on grid spend."}],
+        },
+    )
+    session.commit()
+
+    result = run_metric_adapters_for_experiment(
+        session,
+        experiment_id=attempt.run.experiment_id,
+        dry_run=False,
+        local_only=True,
+    )
+    session.commit()
+
+    assert result["scores_recorded"] == 1
+    assert result["skipped"] == []
+    score = session.scalar(select(Score).where(Score.evaluator_type == "metric_adapter"))
+    assert score is not None
+    assert score.value["score"] == 1.0
+
+
 def test_metric_adapter_execution_dry_run_local_only_and_api_surface(
     client: TestClient, session
 ) -> None:
