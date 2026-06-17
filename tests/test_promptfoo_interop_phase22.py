@@ -374,6 +374,33 @@ tests:
     )
 
 
+def test_promptfoo_preview_warns_on_boolean_max_concurrency(tmp_path: Path) -> None:
+    config_path = tmp_path / "promptfoo-bool-concurrency.yaml"
+    config_path.write_text(
+        """
+description: Bool concurrency
+prompts:
+  - Summarize {{topic}}.
+providers:
+  - openai:gpt-5.5
+options:
+  maxConcurrency: true
+tests:
+  - description: Case A
+    vars:
+      topic: copper
+""",
+        encoding="utf-8",
+    )
+
+    preview = preview_promptfoo_import(config_path)
+
+    assert preview.manifest.controls.max_parallel_requests is None
+    assert ("unsupported_option", "$.options.maxConcurrency") in {
+        (warning["code"], warning["path"]) for warning in preview.warnings
+    }
+
+
 def test_promptfoo_preview_missing_targets_warning_uses_targets_path(
     tmp_path: Path,
 ) -> None:
