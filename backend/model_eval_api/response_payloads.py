@@ -28,7 +28,7 @@ def attempt_output_text(attempt: RunAttempt) -> str:
                 if isinstance(content, str) and content and not content.isspace():
                     return content
                 message_text = _content_text(content)
-                if message_text:
+                if message_text and not message_text.isspace():
                     return message_text
     return ""
 
