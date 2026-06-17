@@ -109,6 +109,41 @@ def test_review_items_extract_nested_provider_output_text(session: Session) -> N
     assert answer_texts == {"OpenAI memo", "Claude memo"}
 
 
+@pytest.mark.parametrize(
+    ("blank_content", "slug"),
+    [
+        ("   ", "choice-output-review"),
+        ([{"type": "text", "text": "   "}], "choice-output-parts-review"),
+    ],
+)
+def test_review_items_fall_back_past_blank_choice_output_text(
+    session: Session, blank_content: object, slug: str
+) -> None:
+    experiment = _completed_experiment(session)
+    runs = sorted(experiment.runs, key=lambda item: item.model_config_slug)
+    runs[0].attempts[0].response_payload = {
+        "choices": [
+            {"message": {"content": blank_content}},
+            {"message": {"content": "Choice memo"}},
+        ]
+    }
+    runs[1].attempts[0].response_payload = {"text": "Claude memo"}
+
+    review_set = create_review_set_from_completed_experiment(
+        session,
+        project=experiment.project,
+        experiment=experiment,
+        slug=slug,
+        name="Choice Output Review",
+        random_seed=1,
+    )
+    session.commit()
+
+    answer_texts = {answer["text"] for answer in review_set.items[0].answer_snapshot["answers"]}
+
+    assert answer_texts == {"Choice memo", "Claude memo"}
+
+
 def test_completed_experiment_creates_pair_for_each_replicate(
     session: Session,
 ) -> None:

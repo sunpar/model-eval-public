@@ -9,7 +9,7 @@ def attempt_output_text(attempt: RunAttempt) -> str:
     payload = attempt.response_payload or {}
     for key in ("output_text", "text", "content"):
         value = payload.get(key)
-        if isinstance(value, str) and value and not value.isspace():
+        if isinstance(value, str) and _has_text(value):
             return value
     output_text = _openai_output_text(payload)
     if output_text:
@@ -18,18 +18,23 @@ def attempt_output_text(attempt: RunAttempt) -> str:
     if content_text:
         return content_text
     choices = payload.get("choices")
-    if isinstance(choices, list) and choices:
-        first = choices[0]
-        if isinstance(first, dict):
-            message = first.get("message")
+    if isinstance(choices, list):
+        for choice in choices:
+            if not isinstance(choice, dict):
+                continue
+            message = choice.get("message")
             if isinstance(message, dict):
                 content = message.get("content")
-                if isinstance(content, str):
+                if isinstance(content, str) and _has_text(content):
                     return content
                 message_text = _content_text(content)
-                if message_text:
+                if _has_text(message_text):
                     return message_text
     return ""
+
+
+def _has_text(value: str) -> bool:
+    return bool(value.strip())
 
 
 def _openai_output_text(payload: dict[str, Any]) -> str:
