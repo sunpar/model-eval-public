@@ -374,16 +374,27 @@ tests:
     )
 
 
-def test_promptfoo_preview_warns_on_boolean_max_concurrency(tmp_path: Path) -> None:
-    config_path = tmp_path / "promptfoo-bool-concurrency.yaml"
+@pytest.mark.parametrize(
+    ("section", "warning_path"),
+    [
+        ("options", "$.options.maxConcurrency"),
+        ("evaluateOptions", "$.evaluateOptions.maxConcurrency"),
+    ],
+)
+def test_promptfoo_preview_warns_on_boolean_max_concurrency(
+    tmp_path: Path,
+    section: str,
+    warning_path: str,
+) -> None:
+    config_path = tmp_path / f"promptfoo-bool-{section}-concurrency.yaml"
     config_path.write_text(
-        """
+        f"""
 description: Bool concurrency
 prompts:
-  - Summarize {{topic}}.
+  - Summarize {{{{topic}}}}.
 providers:
   - openai:gpt-5.5
-options:
+{section}:
   maxConcurrency: true
 tests:
   - description: Case A
@@ -396,7 +407,7 @@ tests:
     preview = preview_promptfoo_import(config_path)
 
     assert preview.manifest.controls.max_parallel_requests is None
-    assert ("unsupported_option", "$.options.maxConcurrency") in {
+    assert ("unsupported_option", warning_path) in {
         (warning["code"], warning["path"]) for warning in preview.warnings
     }
 
@@ -689,6 +700,26 @@ def test_promptfoo_export_warns_for_array_vars_and_falsey_unsupported_controls(
         ("lossy_case_var_expansion", "$.cases.case_a.vars.topics"),
         ("unsupported_control_mapping", "$.controls.local_only"),
         ("unsupported_control_mapping", "$.controls.max_total_cost_usd"),
+    }
+
+
+@pytest.mark.parametrize("max_parallel_requests", [True, False, 0, -1])
+def test_promptfoo_export_does_not_emit_invalid_max_parallel_requests(
+    session: Session,
+    max_parallel_requests: object,
+) -> None:
+    experiment = _promptfoo_export_experiment(session)
+    experiment.controls_snapshot = {
+        "max_parallel_requests": max_parallel_requests,
+        "truncation_policy": "fail_on_over_budget",
+    }
+
+    exported = export_experiment_to_promptfoo(experiment)
+
+    payload = yaml.safe_load(exported.content)
+    assert "options" not in payload
+    assert ("unsupported_control_mapping", "$.controls.max_parallel_requests") in {
+        (warning["code"], warning["path"]) for warning in exported.warnings
     }
 
 
