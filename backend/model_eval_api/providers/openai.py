@@ -56,16 +56,21 @@ class OpenAIAdapter(BaseProviderAdapter):
 
         reasoning = raw_params.get("reasoning")
         reasoning_level = normalized["reasoning_level"]
+        raw_reasoning_level = raw_params.get("reasoning_level")
+        if raw_reasoning_level == "none":
+            reasoning_level = "none"
+        elif raw_reasoning_level:
+            reasoning_level = raw_reasoning_level
         if reasoning is not None:
             payload["reasoning"] = reasoning
-        elif "reasoning_effort" in raw_params or "reasoning_level" in raw_params:
-            reasoning_effort = (
-                raw_params["reasoning_effort"]
-                if "reasoning_effort" in raw_params
-                else raw_params.get("reasoning_level")
-            )
-            if reasoning_effort and reasoning_effort != "none":
+        elif "reasoning_effort" in raw_params:
+            reasoning_effort = raw_params["reasoning_effort"]
+            if reasoning_effort == "none":
+                pass
+            elif reasoning_effort:
                 payload["reasoning"] = {"effort": reasoning_effort}
+            elif reasoning_level and reasoning_level != "none":
+                payload["reasoning"] = {"effort": reasoning_level}
         elif reasoning_level and reasoning_level != "none":
             payload["reasoning"] = {"effort": reasoning_level}
 
