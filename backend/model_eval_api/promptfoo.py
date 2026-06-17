@@ -610,7 +610,7 @@ def _controls(
         warnings.append(_warning("unsupported_option", path_root, "Options must be a mapping."))
         return controls
     for key, item in value.items():
-        if key == "maxConcurrency" and isinstance(item, int):
+        if key == "maxConcurrency" and _is_positive_int(item):
             controls["max_parallel_requests"] = item
         else:
             warnings.append(
@@ -621,6 +621,10 @@ def _controls(
                 )
             )
     return controls
+
+
+def _is_positive_int(value: Any) -> bool:
+    return type(value) is int and value >= 1
 
 
 def _promptfoo_export_prompts(
@@ -755,7 +759,7 @@ def _promptfoo_export_options(
 ) -> dict[str, Any]:
     options: dict[str, Any] = {}
     for key, value in sorted((controls or {}).items()):
-        if key == "max_parallel_requests" and isinstance(value, int):
+        if key == "max_parallel_requests" and _is_positive_int(value):
             options["maxConcurrency"] = value
         elif key == "truncation_policy" and value == "fail_on_over_budget":
             continue
