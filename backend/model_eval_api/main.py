@@ -966,10 +966,11 @@ def run_experiment_metric_adapters(
     request: MetricAdapterRunCreate,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
+    experiment = _require_experiment(session, experiment_id)
     try:
         payload = run_metric_adapters_for_experiment(
             session,
-            experiment_id=experiment_id,
+            experiment_id=experiment.id,
             adapter_config_slug=request.adapter_config_slug,
             adapter_config_version=request.adapter_config_version,
             dry_run=request.dry_run,
