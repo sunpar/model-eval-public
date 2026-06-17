@@ -7,6 +7,7 @@ from typer.testing import CliRunner
 
 from model_eval_api.main import app as api_app
 from model_eval_api.manifest import (
+    ControlsManifest,
     ManifestValidationError,
     expand_manifest,
     load_manifest_file,
@@ -35,6 +36,19 @@ def _assert_cli_validate_failure(manifest_path: Path, expected_stderr: str) -> N
     assert expected_stderr in result.stderr
     assert all(line.startswith("- ") for line in result.stderr.splitlines())
     assert result.exception is None or isinstance(result.exception, SystemExit)
+
+
+def _manifest_payload_with_controls(controls: dict[str, object]) -> dict[str, object]:
+    return {
+        "name": "controls_manifest",
+        "cases": [{"id": "case_a", "prompt": "A"}],
+        "models": [{"id": "model_a", "provider": "openai", "model": "gpt-5.5", "params": {}}],
+        "system_prompts": ["prompt_a"],
+        "warmers": ["warmer_a"],
+        "design": {"type": "full_factorial", "replicates": 1},
+        "controls": controls,
+        "evaluation": {"evaluators": ["eval_a"]},
+    }
 
 
 def test_copper_memo_manifest_expands_to_expected_counts() -> None:
@@ -217,6 +231,41 @@ def test_manifest_rejects_invalid_reliability_replicate_controls() -> None:
 
     assert result.valid is False
     assert "Controls reliability_replicates must be an integer greater than or equal to 1." in result.errors
+
+
+def test_manifest_accepts_positive_max_parallel_requests_control() -> None:
+    payload = _manifest_payload_with_controls({"max_parallel_requests": 2})
+
+    manifest = parse_manifest(payload)
+
+    assert manifest.controls.max_parallel_requests == 2
+
+
+def test_manifest_accepts_null_max_parallel_requests_control() -> None:
+    payload = _manifest_payload_with_controls({"max_parallel_requests": None})
+
+    manifest = parse_manifest(payload)
+
+    assert manifest.controls.max_parallel_requests is None
+
+
+def test_max_parallel_requests_schema_remains_positive_integer_contract() -> None:
+    schema = ControlsManifest.model_json_schema()["properties"]["max_parallel_requests"]
+
+    assert {"type": "integer", "minimum": 1} in schema["anyOf"]
+    assert {"type": "null"} in schema["anyOf"]
+
+
+@pytest.mark.parametrize("max_parallel_requests", [True, False, 0, -1, "2"])
+def test_manifest_rejects_invalid_max_parallel_requests_controls(
+    max_parallel_requests: object,
+) -> None:
+    payload = _manifest_payload_with_controls({"max_parallel_requests": max_parallel_requests})
+
+    result = validate_manifest_payload(payload)
+
+    assert result.valid is False
+    assert "Controls max_parallel_requests must be an integer greater than or equal to 1." in result.errors
 
 
 def test_validation_reports_duplicate_ids_and_unknown_design_references() -> None:

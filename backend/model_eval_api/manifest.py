@@ -154,7 +154,12 @@ class EvaluationManifest(BaseModel):
 class ControlsManifest(BaseModel):
     model_config = ConfigDict(extra="allow")
 
-    max_parallel_requests: int | None = None
+    max_parallel_requests: Any = Field(
+        default=None,
+        json_schema_extra={
+            "anyOf": [{"type": "integer", "minimum": 1}, {"type": "null"}],
+        },
+    )
     max_total_cost_usd: float | None = None
     reliability_replicates: Any = None
     context_budget_tokens: int | None = None
@@ -470,7 +475,7 @@ def _validate_controls(controls: ControlsManifest, errors: list[str]) -> None:
         type(controls.reliability_replicates) is not int or controls.reliability_replicates < 1
     ):
         errors.append("Controls reliability_replicates must be an integer greater than or equal to 1.")
-    for field_name in ("context_budget_tokens", "max_context_tokens"):
+    for field_name in ("max_parallel_requests", "context_budget_tokens", "max_context_tokens"):
         value = getattr(controls, field_name)
         if value is not None and (type(value) is not int or value < 1):
             errors.append(f"Controls {field_name} must be an integer greater than or equal to 1.")
