@@ -219,6 +219,44 @@ def test_manifest_rejects_invalid_reliability_replicate_controls() -> None:
     assert "Controls reliability_replicates must be an integer greater than or equal to 1." in result.errors
 
 
+def test_manifest_accepts_positive_max_parallel_requests_control() -> None:
+    payload = {
+        "name": "parallel_controls",
+        "cases": [{"id": "case_a", "prompt": "A"}],
+        "models": [{"id": "model_a", "provider": "openai", "model": "gpt-5.5", "params": {}}],
+        "system_prompts": ["prompt_a"],
+        "warmers": ["warmer_a"],
+        "design": {"type": "full_factorial", "replicates": 1},
+        "controls": {"max_parallel_requests": 2},
+        "evaluation": {"evaluators": ["eval_a"]},
+    }
+
+    manifest = parse_manifest(payload)
+
+    assert manifest.controls.max_parallel_requests == 2
+
+
+@pytest.mark.parametrize("max_parallel_requests", [True, False, 0, -1, "2"])
+def test_manifest_rejects_invalid_max_parallel_requests_controls(
+    max_parallel_requests: object,
+) -> None:
+    payload = {
+        "name": "bad_parallel_controls",
+        "cases": [{"id": "case_a", "prompt": "A"}],
+        "models": [{"id": "model_a", "provider": "openai", "model": "gpt-5.5", "params": {}}],
+        "system_prompts": ["prompt_a"],
+        "warmers": ["warmer_a"],
+        "design": {"type": "full_factorial", "replicates": 1},
+        "controls": {"max_parallel_requests": max_parallel_requests},
+        "evaluation": {"evaluators": ["eval_a"]},
+    }
+
+    result = validate_manifest_payload(payload)
+
+    assert result.valid is False
+    assert "Controls max_parallel_requests must be an integer greater than or equal to 1." in result.errors
+
+
 def test_validation_reports_duplicate_ids_and_unknown_design_references() -> None:
     payload = {
         "name": "bad_manifest",
