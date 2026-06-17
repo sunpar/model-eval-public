@@ -245,7 +245,8 @@ def _input_present(field: str, value: Any) -> bool:
         return isinstance(value, list) and bool(value)
     if field == "reference_answers":
         return (isinstance(value, str) and bool(value.strip())) or (
-            isinstance(value, list) and bool(value)
+            isinstance(value, list)
+            and any(_text_from_mapping(answer).strip() for answer in value)
         )
     return value not in (None, "", [], {})
 
