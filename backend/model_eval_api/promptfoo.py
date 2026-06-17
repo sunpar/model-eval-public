@@ -411,8 +411,18 @@ def _case_records(
             "unsupported_test_field",
         )
         variables = dict(default_vars)
-        if isinstance(item.get("vars"), dict):
-            variables.update(item["vars"])
+        if "vars" in item:
+            variables.update(
+                _vars_mapping_or_warning(
+                    item["vars"],
+                    warnings,
+                    path=f"{path}.vars",
+                    invalid_warning_code="unsupported_test_vars",
+                    source_warning_code="unsupported_test_vars_source",
+                    invalid_message="Promptfoo test vars must be a mapping or file path source.",
+                    source_message="Promptfoo test vars file sources are not loaded.",
+                )
+            )
         description = str(item.get("description") or f"promptfoo_case_{index + 1}")
         case_id = _unique_slug(
             _slugify(description, f"promptfoo_case_{index + 1}"),
@@ -575,7 +585,19 @@ def _default_test(value: Any, warnings: list[dict[str, str]]) -> dict[str, Any]:
                     "Promptfoo defaultTest options must be a mapping.",
                 )
             )
-    return {"vars": dict(value.get("vars")) if isinstance(value.get("vars"), dict) else {}}
+    if "vars" not in value:
+        return {"vars": {}}
+    return {
+        "vars": _vars_mapping_or_warning(
+            value["vars"],
+            warnings,
+            path="$.defaultTest.vars",
+            invalid_warning_code="unsupported_default_test_vars",
+            source_warning_code="unsupported_default_test_vars_source",
+            invalid_message="Promptfoo defaultTest vars must be a mapping or file path source.",
+            source_message="Promptfoo defaultTest vars file sources are not loaded.",
+        )
+    }
 
 
 def _controls(
@@ -816,6 +838,31 @@ def _case_prompt(variables: dict[str, Any], fallback: str) -> str:
         if isinstance(value, str) and value.strip():
             return value.strip()
     return json.dumps(variables, sort_keys=True) if variables else fallback
+
+
+def _vars_mapping_or_warning(
+    value: Any,
+    warnings: list[dict[str, str]],
+    *,
+    path: str,
+    invalid_warning_code: str,
+    source_warning_code: str,
+    invalid_message: str,
+    source_message: str,
+) -> dict[str, Any]:
+    if isinstance(value, dict):
+        return dict(value)
+    if _is_vars_file_source(value):
+        warnings.append(_warning(source_warning_code, path, source_message))
+        return {}
+    warnings.append(_warning(invalid_warning_code, path, invalid_message))
+    return {}
+
+
+def _is_vars_file_source(value: Any) -> bool:
+    return isinstance(value, str) or (
+        isinstance(value, list) and all(isinstance(item, str) for item in value)
+    )
 
 
 def _normalized_assertion_type(value: Any) -> str:

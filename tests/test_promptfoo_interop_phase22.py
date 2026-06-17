@@ -278,6 +278,66 @@ tests:
     }
 
 
+def test_promptfoo_preview_warns_when_vars_are_malformed(tmp_path: Path) -> None:
+    config_path = tmp_path / "promptfoo-bad-vars.yaml"
+    config_path.write_text(
+        """
+description: Bad vars
+prompts:
+  - Summarize {{topic}}.
+providers:
+  - openai:gpt-5.5
+defaultTest:
+  vars:
+tests:
+  - description: Bad case vars
+    vars: 7
+""",
+        encoding="utf-8",
+    )
+
+    preview = preview_promptfoo_import(config_path)
+
+    assert preview.manifest.cases[0].prompt == "Bad case vars"
+    assert preview.manifest.cases[0].model_extra["variables"] == {}
+    assert {
+        ("unsupported_default_test_vars", "$.defaultTest.vars"),
+        ("unsupported_test_vars", "$.tests[0].vars"),
+    }.issubset({(warning["code"], warning["path"]) for warning in preview.warnings})
+
+
+def test_promptfoo_preview_warns_when_vars_use_unsupported_external_sources(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "promptfoo-file-vars.yaml"
+    config_path.write_text(
+        """
+description: File vars
+prompts:
+  - Summarize {{topic}}.
+providers:
+  - openai:gpt-5.5
+defaultTest:
+  vars: file://defaults.yaml
+tests:
+  - description: File case vars
+    vars:
+      - file://vars-a.yaml
+      - file://vars-b.yaml
+""",
+        encoding="utf-8",
+    )
+
+    preview = preview_promptfoo_import(config_path)
+
+    assert preview.manifest.cases[0].prompt == "File case vars"
+    assert preview.manifest.cases[0].model_extra["variables"] == {}
+    assert {
+        ("unsupported_default_test_vars_source", "$.defaultTest.vars"),
+        ("unsupported_test_vars_source", "$.tests[0].vars"),
+    }.issubset({(warning["code"], warning["path"]) for warning in preview.warnings})
+
+
 def test_promptfoo_preview_accepts_targets_and_evaluate_options_with_colon_models(
     tmp_path: Path,
 ) -> None:
