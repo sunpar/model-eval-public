@@ -98,10 +98,11 @@ def artifact_data_url(artifact: dict[str, Any]) -> str | None:
         return None
     if uri.startswith(("http://", "https://", "data:")):
         return uri
-    parsed = urlparse(uri)
-    if parsed.scheme != "file" or parsed.netloc not in {"", "localhost"}:
+    from model_eval_api.artifacts import local_storage_path
+
+    path = local_storage_path(uri)
+    if path is None:
         return None
-    path = Path(unquote(parsed.path))
     try:
         encoded = base64.b64encode(path.read_bytes()).decode("ascii")
     except OSError:
