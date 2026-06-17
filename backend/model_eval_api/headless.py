@@ -31,6 +31,7 @@ from model_eval_api.persistence.models import (
 )
 from model_eval_api.providers import ProviderExecutionConfig
 from model_eval_api.promptfoo import export_experiment_to_promptfoo
+from model_eval_api.response_payloads import attempt_output_text
 from model_eval_api.results_analytics import aggregate_experiment_results
 
 
@@ -854,7 +855,7 @@ def _markdown_export(
     for attempt in _experiment_attempts(session, experiment)[:3]:
         lines.append(
             f"- `{attempt.attempt_id}` {attempt.run.model_config_slug}/{attempt.run.warmer_slug}: "
-            f"{_attempt_output_text(attempt)[:160] or 'no output'}"
+            f"{attempt_output_text(attempt)[:160] or 'no output'}"
         )
     return "\n".join(lines) + "\n"
 
@@ -1154,12 +1155,3 @@ def _latency_ms(value: float | int | None) -> str:
 
 def _plain_label(value: str) -> str:
     return value.replace("_", " ")
-
-
-def _attempt_output_text(attempt: RunAttempt) -> str:
-    payload = attempt.response_payload or {}
-    for key in ("output_text", "text", "content"):
-        value = payload.get(key)
-        if isinstance(value, str):
-            return value
-    return ""

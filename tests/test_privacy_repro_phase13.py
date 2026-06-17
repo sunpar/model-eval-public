@@ -470,6 +470,34 @@ def test_otel_trace_redacts_prompt_artifact_payload_and_output_values(
     assert "model_eval.artifact_preprocessing_run" in encoded
 
 
+def test_markdown_export_reads_openai_responses_output_payload(session: Session) -> None:
+    experiment = _experiment(session, controls={"local_only": False})
+    run = _first_run(session, experiment.id)
+    attempt = _first_attempt(session, run.id)
+    experiment.status = "complete"
+    run.status = RunStatus.COMPLETE.value
+    attempt.status = AttemptStatus.SUCCEEDED.value
+    attempt.response_payload = {
+        "id": "resp_phase13",
+        "output": [
+            {
+                "content": [
+                    {
+                        "type": "output_text",
+                        "text": "Responses API text from stored payload.",
+                    }
+                ]
+            }
+        ],
+    }
+    session.commit()
+
+    markdown = export_experiment(session, experiment.id, "markdown")
+
+    assert "Responses API text from stored payload." in markdown
+    assert "no output" not in markdown
+
+
 def _experiment(
     session: Session,
     *,
