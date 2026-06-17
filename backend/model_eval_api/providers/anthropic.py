@@ -123,15 +123,17 @@ def _anthropic_thinking(
 ) -> dict[str, Any] | None:
     if "thinking" in raw_params:
         return raw_params["thinking"]
-    budget = raw_params.get("thinking_budget")
-    if type(budget) is int:
-        return {"type": "enabled", "budget_tokens": budget}
-    if isinstance(budget, str):
-        budget = THINKING_BUDGET_BY_LEVEL.get(budget)
-    elif reasoning_level and reasoning_level != "none":
+    if "thinking_budget" in raw_params:
+        budget = raw_params["thinking_budget"]
+        if isinstance(budget, str):
+            budget = THINKING_BUDGET_BY_LEVEL.get(budget)
+        if type(budget) is int and budget > 0:
+            return {"type": "enabled", "budget_tokens": budget}
+        return None
+    if reasoning_level and reasoning_level != "none":
         budget = THINKING_BUDGET_BY_LEVEL.get(reasoning_level)
-    if isinstance(budget, int):
-        return {"type": "enabled", "budget_tokens": budget}
+        if type(budget) is int:
+            return {"type": "enabled", "budget_tokens": budget}
     return None
 
 
