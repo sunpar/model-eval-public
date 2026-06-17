@@ -154,7 +154,10 @@ class EvaluationManifest(BaseModel):
 class ControlsManifest(BaseModel):
     model_config = ConfigDict(extra="allow")
 
-    max_parallel_requests: Any = None
+    max_parallel_requests: Any = Field(
+        default=None,
+        json_schema_extra={"type": "integer", "minimum": 1},
+    )
     max_total_cost_usd: float | None = None
     reliability_replicates: Any = None
     context_budget_tokens: int | None = None
