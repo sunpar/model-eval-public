@@ -266,7 +266,7 @@ def _text_from_mapping(value: Any) -> str:
         return ""
     for key in ("text", "chunk_text", "content", "answer", "reference_answer"):
         item = value.get(key)
-        if isinstance(item, str):
+        if isinstance(item, str) and item.strip():
             return item
     return " ".join(str(item) for item in value.values() if isinstance(item, str))
 
