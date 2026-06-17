@@ -92,6 +92,26 @@ def test_openai_raw_reasoning_effort_overrides_normalized_reasoning_level() -> N
     assert request.raw_provider_params["reasoning_effort"] == "low"
 
 
+def test_openai_raw_reasoning_none_suppresses_normalized_reasoning_level() -> None:
+    adapter = OpenAIAdapter()
+    snapshot = _run_snapshot("openai", {"reasoning_effort": "none"})
+    snapshot["model_config"]["reasoning_level"] = "high"
+
+    request = adapter.build_request(snapshot)
+
+    assert "reasoning" not in request.payload
+
+
+def test_openai_raw_reasoning_level_none_suppresses_normalized_reasoning_level() -> None:
+    adapter = OpenAIAdapter()
+    snapshot = _run_snapshot("openai", {"reasoning_level": "none"})
+    snapshot["model_config"]["reasoning_level"] = "high"
+
+    request = adapter.build_request(snapshot)
+
+    assert "reasoning" not in request.payload
+
+
 def test_openai_maps_raw_max_tokens_to_max_output_tokens() -> None:
     adapter = OpenAIAdapter()
     snapshot = _run_snapshot("openai", {"max_tokens": 256})
