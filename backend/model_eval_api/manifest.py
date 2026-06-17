@@ -156,7 +156,9 @@ class ControlsManifest(BaseModel):
 
     max_parallel_requests: Any = Field(
         default=None,
-        json_schema_extra={"type": "integer", "minimum": 1},
+        json_schema_extra={
+            "anyOf": [{"type": "integer", "minimum": 1}, {"type": "null"}],
+        },
     )
     max_total_cost_usd: float | None = None
     reliability_replicates: Any = None

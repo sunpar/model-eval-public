@@ -241,11 +241,19 @@ def test_manifest_accepts_positive_max_parallel_requests_control() -> None:
     assert manifest.controls.max_parallel_requests == 2
 
 
+def test_manifest_accepts_null_max_parallel_requests_control() -> None:
+    payload = _manifest_payload_with_controls({"max_parallel_requests": None})
+
+    manifest = parse_manifest(payload)
+
+    assert manifest.controls.max_parallel_requests is None
+
+
 def test_max_parallel_requests_schema_remains_positive_integer_contract() -> None:
     schema = ControlsManifest.model_json_schema()["properties"]["max_parallel_requests"]
 
-    assert schema["type"] == "integer"
-    assert schema["minimum"] == 1
+    assert {"type": "integer", "minimum": 1} in schema["anyOf"]
+    assert {"type": "null"} in schema["anyOf"]
 
 
 @pytest.mark.parametrize("max_parallel_requests", [True, False, 0, -1, "2"])
