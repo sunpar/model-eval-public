@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 
+import pytest
 from sqlalchemy.orm import sessionmaker
 
 from model_eval_api.manifest import parse_manifest
@@ -229,6 +230,25 @@ def test_anthropic_adapter_builds_payload_with_system_and_chat_messages() -> Non
         "type": "enabled",
         "budget_tokens": 8192,
     }
+
+
+def test_anthropic_positive_thinking_budget_overrides_reasoning_level() -> None:
+    adapter = AnthropicAdapter()
+
+    request = adapter.build_request(_run_snapshot("anthropic", {"thinking_budget": 2048}))
+
+    assert request.payload["thinking"] == {"type": "enabled", "budget_tokens": 2048}
+
+
+@pytest.mark.parametrize("thinking_budget", [True, False, 0, -1])
+def test_anthropic_omits_invalid_numeric_thinking_budget(
+    thinking_budget: object,
+) -> None:
+    adapter = AnthropicAdapter()
+
+    request = adapter.build_request(_run_snapshot("anthropic", {"thinking_budget": thinking_budget}))
+
+    assert "thinking" not in request.payload
 
 
 def test_anthropic_maps_raw_max_output_tokens_to_max_tokens() -> None:
