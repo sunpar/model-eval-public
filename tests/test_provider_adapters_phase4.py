@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 
+import pytest
 from sqlalchemy.orm import sessionmaker
 
 from model_eval_api.manifest import parse_manifest
@@ -92,19 +93,23 @@ def test_openai_raw_reasoning_effort_overrides_normalized_reasoning_level() -> N
     assert request.raw_provider_params["reasoning_effort"] == "low"
 
 
-def test_openai_raw_reasoning_none_suppresses_normalized_reasoning_level() -> None:
+def test_openai_raw_reasoning_object_overrides_reasoning_effort_none() -> None:
     adapter = OpenAIAdapter()
-    snapshot = _run_snapshot("openai", {"reasoning_effort": "none"})
+    snapshot = _run_snapshot(
+        "openai",
+        {"reasoning": {"effort": "medium"}, "reasoning_effort": "none"},
+    )
     snapshot["model_config"]["reasoning_level"] = "high"
 
     request = adapter.build_request(snapshot)
 
-    assert "reasoning" not in request.payload
+    assert request.payload["reasoning"] == {"effort": "medium"}
 
 
-def test_openai_raw_reasoning_level_none_suppresses_normalized_reasoning_level() -> None:
+@pytest.mark.parametrize("raw_key", ["reasoning_effort", "reasoning_level"])
+def test_openai_raw_reasoning_none_suppresses_normalized_reasoning_level(raw_key: str) -> None:
     adapter = OpenAIAdapter()
-    snapshot = _run_snapshot("openai", {"reasoning_level": "none"})
+    snapshot = _run_snapshot("openai", {raw_key: "none"})
     snapshot["model_config"]["reasoning_level"] = "high"
 
     request = adapter.build_request(snapshot)
