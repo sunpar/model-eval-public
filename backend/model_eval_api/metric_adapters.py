@@ -245,7 +245,8 @@ def _input_present(field: str, value: Any) -> bool:
         return isinstance(value, list) and bool(value)
     if field == "reference_answers":
         return (isinstance(value, str) and bool(value.strip())) or (
-            isinstance(value, list) and bool(value)
+            isinstance(value, list)
+            and any(_text_from_mapping(answer).strip() for answer in value)
         )
     return value not in (None, "", [], {})
 
@@ -265,7 +266,7 @@ def _text_from_mapping(value: Any) -> str:
         return ""
     for key in ("text", "chunk_text", "content", "answer", "reference_answer"):
         item = value.get(key)
-        if isinstance(item, str):
+        if isinstance(item, str) and item.strip():
             return item
     return " ".join(str(item) for item in value.values() if isinstance(item, str))
 

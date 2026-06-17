@@ -246,6 +246,34 @@ def test_metric_adapter_required_inputs_distinguish_input_classes() -> None:
         "missing": [],
     }
 
+    blank_reference_answers = validate_metric_adapter_inputs(
+        ["answer_text", "reference_answers"],
+        {
+            "answer_text": "Copper demand rose.",
+            "reference_answers": ["   ", {"text": ""}, {"reference_answer": "   "}],
+        },
+    )
+
+    assert blank_reference_answers == {
+        "valid": False,
+        "present": ["answer_text"],
+        "missing": ["reference_answers"],
+    }
+
+    fallback_reference_answer = validate_metric_adapter_inputs(
+        ["answer_text", "reference_answers"],
+        {
+            "answer_text": "Copper demand rose.",
+            "reference_answers": [{"text": "", "reference_answer": "Copper demand rose."}],
+        },
+    )
+
+    assert fallback_reference_answer == {
+        "valid": True,
+        "present": ["answer_text", "reference_answers"],
+        "missing": [],
+    }
+
 
 def test_local_metric_adapters_produce_deterministic_score_payloads() -> None:
     retrieval = run_metric_adapter(
