@@ -18,13 +18,14 @@ def attempt_output_text(attempt: RunAttempt) -> str:
     if content_text:
         return content_text
     choices = payload.get("choices")
-    if isinstance(choices, list) and choices:
-        first = choices[0]
-        if isinstance(first, dict):
-            message = first.get("message")
+    if isinstance(choices, list):
+        for choice in choices:
+            if not isinstance(choice, dict):
+                continue
+            message = choice.get("message")
             if isinstance(message, dict):
                 content = message.get("content")
-                if isinstance(content, str):
+                if isinstance(content, str) and content and not content.isspace():
                     return content
                 message_text = _content_text(content)
                 if message_text:
