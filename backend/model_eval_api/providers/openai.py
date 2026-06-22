@@ -164,9 +164,16 @@ def _openai_output_text(payload: dict[str, Any]) -> str:
         return payload["output_text"]
     parts: list[str] = []
     for item in payload.get("output") or []:
-        for content in item.get("content") or []:
-            if content.get("type") in {"output_text", "text"} and isinstance(
-                content.get("text"), str
+        if not isinstance(item, dict):
+            continue
+        content_items = item.get("content")
+        if not isinstance(content_items, list):
+            continue
+        for content in content_items:
+            if (
+                isinstance(content, dict)
+                and content.get("type") in {"output_text", "text"}
+                and isinstance(content.get("text"), str)
             ):
                 parts.append(content["text"])
     return "".join(parts)
