@@ -460,17 +460,17 @@ def _assertion_records(
     seen_adapters: dict[str, str] = {}
     evaluator_slugs: set[str] = set()
     adapter_slugs: set[str] = set()
-    default_assertions = _assertions_from_mapping(payload.get("defaultTest"))
+    default_assertions = _assertions_with_paths(payload.get("defaultTest"), "$.defaultTest.assert")
     tests = _as_list(payload.get("tests"))
-    assertion_sources = tests if tests else [{"assert": default_assertions}]
+    assertion_sources = tests if tests else [None]
     for test_index, test in enumerate(assertion_sources):
-        assertions = [*default_assertions, *_assertions_from_mapping(test)] if tests else default_assertions
-        for assertion_index, assertion in enumerate(assertions):
-            path = (
-                f"$.tests[{test_index}].assert[{assertion_index}]"
-                if tests
-                else f"$.defaultTest.assert[{assertion_index}]"
-            )
+        test_assertions = (
+            _assertions_with_paths(test, f"$.tests[{test_index}].assert")
+            if tests
+            else []
+        )
+        assertions = [*default_assertions, *test_assertions]
+        for assertion, path in assertions:
             if not isinstance(assertion, dict):
                 warnings.append(
                     _warning("unsupported_assertion", path, "Assertion entry is not a mapping.")
@@ -835,6 +835,13 @@ def _assertions_from_mapping(value: Any) -> list[Any]:
     if not isinstance(value, dict):
         return []
     return _as_list(value.get("assert"))
+
+
+def _assertions_with_paths(value: Any, path_root: str) -> list[tuple[Any, str]]:
+    return [
+        (assertion, f"{path_root}[{index}]")
+        for index, assertion in enumerate(_assertions_from_mapping(value))
+    ]
 
 
 def _provider_model(provider_id: str) -> tuple[str, str]:

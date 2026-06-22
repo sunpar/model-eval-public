@@ -269,6 +269,41 @@ tests:
     } >= {("unsupported_assertion_threshold", "$.tests[0].assert[0].threshold")}
 
 
+def test_promptfoo_preview_warns_on_default_boolean_answer_relevance_threshold_path(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "promptfoo-default-boolean-threshold.yaml"
+    config_path.write_text(
+        """
+description: Default boolean threshold
+prompts:
+  - Summarize {{topic}}.
+providers:
+  - openai:gpt-5.5
+defaultTest:
+  assert:
+    - type: answer-relevance
+      threshold: true
+tests:
+  - description: Case A
+    vars:
+      topic: copper
+""",
+        encoding="utf-8",
+    )
+
+    preview = preview_promptfoo_import(config_path)
+
+    [adapter_config] = preview.library_records["metric_adapter_configs"]
+    assert adapter_config["capability_metadata"] == {
+        "promptfoo_assertion_type": "answer-relevance"
+    }
+    assert {
+        (warning["code"], warning["path"])
+        for warning in preview.warnings
+    } >= {("unsupported_assertion_threshold", "$.defaultTest.assert[0].threshold")}
+
+
 def test_promptfoo_preview_applies_default_test_vars_and_warns_on_default_options(
     tmp_path: Path,
 ) -> None:
