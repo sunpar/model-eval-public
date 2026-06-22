@@ -163,7 +163,10 @@ def _openai_output_text(payload: dict[str, Any]) -> str:
     if isinstance(payload.get("output_text"), str):
         return payload["output_text"]
     parts: list[str] = []
-    for item in payload.get("output") or []:
+    output_items = payload.get("output")
+    if not isinstance(output_items, list):
+        return ""
+    for item in output_items:
         if not isinstance(item, dict):
             continue
         content_items = item.get("content")
