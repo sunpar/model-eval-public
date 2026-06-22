@@ -7,7 +7,10 @@ from typer.testing import CliRunner
 
 from model_eval_api.main import app as api_app
 from model_eval_api.manifest import (
+    BenchmarkSuiteReference,
+    CaseManifest,
     ControlsManifest,
+    EvaluatorManifest,
     ManifestValidationError,
     expand_manifest,
     load_manifest_file,
@@ -130,6 +133,17 @@ def test_model_config_library_reference_can_be_id_only() -> None:
 
     assert result.valid is True
     assert result.errors == []
+
+
+@pytest.mark.parametrize(
+    "manifest_model",
+    [BenchmarkSuiteReference, CaseManifest, EvaluatorManifest],
+)
+def test_version_ref_schema_remains_positive_integer_contract(manifest_model) -> None:
+    schema = manifest_model.model_json_schema()["properties"]["version"]
+
+    assert {"type": "integer", "minimum": 1} in schema["anyOf"]
+    assert {"type": "null"} in schema["anyOf"]
 
 
 @pytest.mark.parametrize(

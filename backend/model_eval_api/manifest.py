@@ -36,7 +36,12 @@ class IdObject(BaseModel):
 
 
 class VersionedIdObject(IdObject):
-    version: int | None = None
+    version: int | None = Field(
+        default=None,
+        json_schema_extra={
+            "anyOf": [{"type": "integer", "minimum": 1}, {"type": "null"}],
+        },
+    )
 
     @field_validator("version", mode="before")
     @classmethod
