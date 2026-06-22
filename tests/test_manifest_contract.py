@@ -51,6 +51,39 @@ def _manifest_payload_with_controls(controls: dict[str, object]) -> dict[str, ob
     }
 
 
+def _manifest_payload_with_version_refs() -> dict[str, object]:
+    return {
+        "name": "version_ref_manifest",
+        "suite": {"id": "suite_a", "version": 1, "split": "validation"},
+        "cases": [{"id": "case_a", "prompt": "A", "version": 1}],
+        "artifacts": [{"id": "artifact_a", "uri": "file:///tmp/artifact.txt", "version": 1}],
+        "models": [
+            {
+                "id": "model_a",
+                "provider": "openai",
+                "model": "gpt-5.5",
+                "params": {},
+                "version": 1,
+            }
+        ],
+        "system_prompts": [{"id": "prompt_a", "prompt": "System.", "version": 1}],
+        "warmers": [{"id": "warmer_a", "messages": [], "version": 1}],
+        "design": {"type": "full_factorial", "replicates": 1},
+        "evaluation": {
+            "evaluators": [
+                {"id": "eval_a", "type": "deterministic", "definition": {}, "version": 1}
+            ]
+        },
+    }
+
+
+def _set_nested_value(payload, path, value) -> None:
+    current = payload
+    for key in path[:-1]:
+        current = current[key]
+    current[path[-1]] = value
+
+
 def test_copper_memo_manifest_expands_to_expected_counts() -> None:
     manifest = load_manifest_file(EXAMPLE_MANIFEST)
     preview = expand_manifest(manifest)
@@ -97,6 +130,31 @@ def test_model_config_library_reference_can_be_id_only() -> None:
 
     assert result.valid is True
     assert result.errors == []
+
+
+@pytest.mark.parametrize(
+    "version_path",
+    [
+        ("suite", "version"),
+        ("cases", 0, "version"),
+        ("artifacts", 0, "version"),
+        ("models", 0, "version"),
+        ("system_prompts", 0, "version"),
+        ("warmers", 0, "version"),
+        ("evaluation", "evaluators", 0, "version"),
+    ],
+)
+@pytest.mark.parametrize("version", [True, 0, -1, "2"])
+def test_manifest_rejects_invalid_version_refs(
+    version_path: tuple[object, ...], version: object
+) -> None:
+    payload = _manifest_payload_with_version_refs()
+    _set_nested_value(payload, version_path, version)
+
+    result = validate_manifest_payload(payload)
+
+    assert result.valid is False
+    assert any("version" in error and "integer" in error for error in result.errors)
 
 
 def test_manifest_rejects_suite_reference_without_expanded_dimensions() -> None:
