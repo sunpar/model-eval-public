@@ -21,6 +21,7 @@ from model_eval_cli.main import app as cli_app
 
 
 EXAMPLE_MANIFEST = Path("examples/copper_memo_context_sensitivity.yaml")
+NestedPath = tuple[str | int, ...]
 
 
 def _assert_load_manifest_error_startswith(manifest_path: Path, expected_prefix: str) -> None:
@@ -80,10 +81,12 @@ def _manifest_payload_with_version_refs() -> dict[str, object]:
     }
 
 
-def _set_nested_value(payload, path, value) -> None:
-    current = payload
+def _set_nested_value(payload: dict[str, object], path: NestedPath, value: object) -> None:
+    current: object = payload
     for key in path[:-1]:
+        assert isinstance(current, dict | list)
         current = current[key]
+    assert isinstance(current, dict | list)
     current[path[-1]] = value
 
 
@@ -160,7 +163,7 @@ def test_version_ref_schema_remains_positive_integer_contract(manifest_model) ->
 )
 @pytest.mark.parametrize("version", [True, 0, -1, "2"])
 def test_manifest_rejects_invalid_version_refs(
-    version_path: tuple[object, ...], version: object
+    version_path: NestedPath, version: object
 ) -> None:
     payload = _manifest_payload_with_version_refs()
     _set_nested_value(payload, version_path, version)
