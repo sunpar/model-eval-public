@@ -520,8 +520,16 @@ def _assertion_records(
             elif assertion_type == "answer_relevance":
                 metadata = {"promptfoo_assertion_type": str(assertion.get("type"))}
                 threshold = assertion.get("threshold")
-                if isinstance(threshold, int | float):
+                if type(threshold) in {int, float}:
                     metadata["threshold"] = float(threshold)
+                elif threshold is not None:
+                    warnings.append(
+                        _warning(
+                            "unsupported_assertion_threshold",
+                            f"{path}.threshold",
+                            "Promptfoo answer-relevance threshold must be numeric.",
+                        )
+                    )
                 slug = _dedupe_slug(
                     "promptfoo_answer_relevance",
                     {"kind": "answer_relevance", "metadata": metadata},
