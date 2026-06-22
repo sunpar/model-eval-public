@@ -469,6 +469,40 @@ def test_response_normalization_extracts_ids_usage_tokens_and_cost() -> None:
     assert anthropic_response.usage.total_tokens == 120
 
 
+def test_openai_response_output_text_ignores_malformed_output_items() -> None:
+    openai = OpenAIAdapter()
+    request = openai.build_request(_run_snapshot("openai", {}))
+
+    response = openai.normalize_response(
+        request,
+        {
+            "output": [
+                "not-a-message",
+                {"content": "not-content"},
+                {"content": ["not-content", {"type": "output_text", "text": "Final memo"}]},
+            ],
+            "usage": {"input_tokens": 10, "output_tokens": 5},
+        },
+    )
+
+    assert response.output_text == "Final memo"
+
+
+def test_openai_response_output_text_ignores_malformed_output_container() -> None:
+    openai = OpenAIAdapter()
+    request = openai.build_request(_run_snapshot("openai", {}))
+
+    response = openai.normalize_response(
+        request,
+        {
+            "output": 42,
+            "usage": {"input_tokens": 10, "output_tokens": 5},
+        },
+    )
+
+    assert response.output_text == ""
+
+
 def test_execute_accepts_mocked_client_when_local_only_is_disabled() -> None:
     adapter = OpenAIAdapter()
     request = adapter.build_request(_run_snapshot("openai", {}))
