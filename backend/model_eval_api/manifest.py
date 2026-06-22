@@ -35,27 +35,42 @@ class IdObject(BaseModel):
         return value
 
 
-class CaseManifest(IdObject):
+class VersionedIdObject(IdObject):
+    version: int | None = Field(
+        default=None,
+        json_schema_extra={
+            "anyOf": [{"type": "integer", "minimum": 1}, {"type": "null"}],
+        },
+    )
+
+    @field_validator("version", mode="before")
+    @classmethod
+    def version_must_be_positive_int(cls, value: Any) -> Any:
+        if value is None:
+            return None
+        if type(value) is not int or value < 1:
+            raise ValueError("version must be an integer greater than or equal to 1")
+        return value
+
+
+class CaseManifest(VersionedIdObject):
     prompt: str | None = None
     prompt_ref: str | None = None
-    version: int | None = None
 
 
-class SystemPromptManifest(IdObject):
+class SystemPromptManifest(VersionedIdObject):
     prompt: str | None = None
     prompt_ref: str | None = None
     messages: list[dict[str, Any]] | None = None
-    version: int | None = None
 
 
-class WarmerManifest(IdObject):
+class WarmerManifest(VersionedIdObject):
     prompt: str | None = None
     prompt_ref: str | None = None
     messages: list[dict[str, Any]] | None = None
-    version: int | None = None
 
 
-class ArtifactManifest(IdObject):
+class ArtifactManifest(VersionedIdObject):
     name: str | None = None
     artifact_type: str | None = None
     uri: str | None = None
@@ -68,20 +83,17 @@ class ArtifactManifest(IdObject):
     image_width: int | None = None
     image_height: int | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
-    version: int | None = None
 
 
-class EvaluatorManifest(IdObject):
+class EvaluatorManifest(VersionedIdObject):
     type: str | None = None
     definition: dict[str, Any] = Field(default_factory=dict)
-    version: int | None = None
 
 
-class ModelConfigManifest(IdObject):
+class ModelConfigManifest(VersionedIdObject):
     provider: str | None = None
     model: str | None = None
     params: Any = Field(default_factory=dict)
-    version: int | None = None
 
     @field_validator("provider")
     @classmethod
@@ -171,8 +183,7 @@ class ControlsManifest(BaseModel):
     local_only: bool | None = None
 
 
-class BenchmarkSuiteReference(IdObject):
-    version: int | None = None
+class BenchmarkSuiteReference(VersionedIdObject):
     split: str | None = None
 
 
