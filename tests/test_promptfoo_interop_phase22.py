@@ -304,6 +304,47 @@ tests:
     } >= {("unsupported_assertion_threshold", "$.defaultTest.assert[0].threshold")}
 
 
+def test_promptfoo_preview_warns_once_for_default_answer_relevance_threshold(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "promptfoo-default-boolean-threshold-multiple-tests.yaml"
+    config_path.write_text(
+        """
+description: Default boolean threshold
+prompts:
+  - Summarize {{topic}}.
+providers:
+  - openai:gpt-5.5
+defaultTest:
+  assert:
+    - type: answer-relevance
+      threshold: true
+tests:
+  - description: Case A
+    vars:
+      topic: copper
+  - description: Case B
+    vars:
+      topic: lithium
+""",
+        encoding="utf-8",
+    )
+
+    preview = preview_promptfoo_import(config_path)
+
+    threshold_warnings = [
+        warning
+        for warning in preview.warnings
+        if warning["code"] == "unsupported_assertion_threshold"
+    ]
+    assert [(warning["path"], warning["message"]) for warning in threshold_warnings] == [
+        (
+            "$.defaultTest.assert[0].threshold",
+            "Promptfoo answer-relevance threshold must be numeric.",
+        )
+    ]
+
+
 def test_promptfoo_preview_applies_default_test_vars_and_warns_on_default_options(
     tmp_path: Path,
 ) -> None:
