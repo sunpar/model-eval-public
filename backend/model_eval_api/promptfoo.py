@@ -460,95 +460,96 @@ def _assertion_records(
     seen_adapters: dict[str, str] = {}
     evaluator_slugs: set[str] = set()
     adapter_slugs: set[str] = set()
-    default_assertions = _assertions_from_mapping(payload.get("defaultTest"))
-    tests = _as_list(payload.get("tests"))
-    assertion_sources = tests if tests else [{"assert": default_assertions}]
-    for test_index, test in enumerate(assertion_sources):
-        assertions = [*default_assertions, *_assertions_from_mapping(test)] if tests else default_assertions
-        for assertion_index, assertion in enumerate(assertions):
-            path = (
-                f"$.tests[{test_index}].assert[{assertion_index}]"
-                if tests
-                else f"$.defaultTest.assert[{assertion_index}]"
+    assertions = _assertions_with_paths(payload.get("defaultTest"), "$.defaultTest.assert")
+    for test_index, test in enumerate(_as_list(payload.get("tests"))):
+        assertions.extend(_assertions_with_paths(test, f"$.tests[{test_index}].assert"))
+    for assertion, path in assertions:
+        if not isinstance(assertion, dict):
+            warnings.append(
+                _warning("unsupported_assertion", path, "Assertion entry is not a mapping.")
             )
-            if not isinstance(assertion, dict):
-                warnings.append(
-                    _warning("unsupported_assertion", path, "Assertion entry is not a mapping.")
+            continue
+        assertion_type = _normalized_assertion_type(assertion.get("type"))
+        if assertion_type in {"not_empty", "not_empty_output"}:
+            slug = _dedupe_slug(
+                "promptfoo_not_empty",
+                {"kind": "no_empty_output"},
+                seen_evaluators,
+                evaluator_slugs,
+            )
+            if slug is not None:
+                evaluators.append(
+                    {
+                        "id": slug,
+                        "type": "deterministic",
+                        "definition": {
+                            "kind": "no_empty_output",
+                            "criterion": slug,
+                            "promptfoo_assertion_type": str(assertion.get("type")),
+                        },
+                    }
                 )
-                continue
-            assertion_type = _normalized_assertion_type(assertion.get("type"))
-            if assertion_type in {"not_empty", "not_empty_output"}:
-                slug = _dedupe_slug(
-                    "promptfoo_not_empty",
-                    {"kind": "no_empty_output"},
-                    seen_evaluators,
-                    evaluator_slugs,
+        elif assertion_type in {"is_json", "json_schema"}:
+            schema = assertion.get("value") if isinstance(assertion.get("value"), dict) else {}
+            slug = _dedupe_slug(
+                "promptfoo_json_schema",
+                {"kind": "json_schema", "schema": schema},
+                seen_evaluators,
+                evaluator_slugs,
+            )
+            if slug is not None:
+                evaluators.append(
+                    {
+                        "id": slug,
+                        "type": "deterministic",
+                        "definition": {
+                            "kind": "json_schema",
+                            "criterion": slug,
+                            "schema": schema,
+                            "promptfoo_assertion_type": str(assertion.get("type")),
+                        },
+                    }
                 )
-                if slug is not None:
-                    evaluators.append(
-                        {
-                            "id": slug,
-                            "type": "deterministic",
-                            "definition": {
-                                "kind": "no_empty_output",
-                                "criterion": slug,
-                                "promptfoo_assertion_type": str(assertion.get("type")),
-                            },
-                        }
-                    )
-            elif assertion_type in {"is_json", "json_schema"}:
-                schema = assertion.get("value") if isinstance(assertion.get("value"), dict) else {}
-                slug = _dedupe_slug(
-                    "promptfoo_json_schema",
-                    {"kind": "json_schema", "schema": schema},
-                    seen_evaluators,
-                    evaluator_slugs,
-                )
-                if slug is not None:
-                    evaluators.append(
-                        {
-                            "id": slug,
-                            "type": "deterministic",
-                            "definition": {
-                                "kind": "json_schema",
-                                "criterion": slug,
-                                "schema": schema,
-                                "promptfoo_assertion_type": str(assertion.get("type")),
-                            },
-                        }
-                    )
-            elif assertion_type == "answer_relevance":
-                metadata = {"promptfoo_assertion_type": str(assertion.get("type"))}
-                threshold = assertion.get("threshold")
-                if isinstance(threshold, int | float):
-                    metadata["threshold"] = float(threshold)
-                slug = _dedupe_slug(
-                    "promptfoo_answer_relevance",
-                    {"kind": "answer_relevance", "metadata": metadata},
-                    seen_adapters,
-                    adapter_slugs,
-                )
-                if slug is not None:
-                    metric_adapters.append(
-                        {
-                            "slug": slug,
-                            "name": "Promptfoo Answer Relevance",
-                            "adapter_kind": "answer_relevance",
-                            "adapter_version": "promptfoo-1",
-                            "required_inputs": ["answer_text", "reference_answers"],
-                            "output_schema": {"type": "object"},
-                            "capability_metadata": metadata,
-                            "local_only": True,
-                        }
-                    )
-            else:
+        elif assertion_type == "answer_relevance":
+            metadata = {"promptfoo_assertion_type": str(assertion.get("type"))}
+            threshold = assertion.get("threshold")
+            if type(threshold) in {int, float}:
+                metadata["threshold"] = float(threshold)
+            elif threshold is not None:
                 warnings.append(
                     _warning(
-                        "unsupported_assertion",
-                        path,
-                        f"Promptfoo assertion type '{assertion.get('type')}' is not mapped.",
+                        "unsupported_assertion_threshold",
+                        f"{path}.threshold",
+                        "Promptfoo answer-relevance threshold must be numeric.",
                     )
                 )
+            slug = _dedupe_slug(
+                "promptfoo_answer_relevance",
+                {"kind": "answer_relevance", "metadata": metadata},
+                seen_adapters,
+                adapter_slugs,
+            )
+            if slug is not None:
+                metric_adapters.append(
+                    {
+                        "slug": slug,
+                        "name": "Promptfoo Answer Relevance",
+                        "adapter_kind": "answer_relevance",
+                        "adapter_version": "promptfoo-1",
+                        "required_inputs": ["answer_text", "reference_answers"],
+                        "output_schema": {"type": "object"},
+                        "capability_metadata": metadata,
+                        "local_only": True,
+                    }
+                )
+        else:
+            warnings.append(
+                _warning(
+                    "unsupported_assertion",
+                    path,
+                    f"Promptfoo assertion type '{assertion.get('type')}' is not mapped.",
+                )
+            )
     return {"evaluators": evaluators, "metric_adapter_configs": metric_adapters}
 
 
@@ -827,6 +828,13 @@ def _assertions_from_mapping(value: Any) -> list[Any]:
     if not isinstance(value, dict):
         return []
     return _as_list(value.get("assert"))
+
+
+def _assertions_with_paths(value: Any, path_root: str) -> list[tuple[Any, str]]:
+    return [
+        (assertion, f"{path_root}[{index}]")
+        for index, assertion in enumerate(_assertions_from_mapping(value))
+    ]
 
 
 def _provider_model(provider_id: str) -> tuple[str, str]:
